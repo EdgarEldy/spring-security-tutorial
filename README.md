@@ -291,28 +291,60 @@ Technical foundation shared by the whole project, to be merged first into `devel
 
 ### Tasks
 
-- [ ] Initialize the project via Spring Initializr (Maven, Java 17, Spring Boot 3.5.16)
-- [ ] Dependencies: `spring-boot-starter-web`, `spring-boot-starter-data-jpa`, `spring-boot-starter-validation`, `spring-boot-starter-actuator`, `spring-boot-starter-security`, `spring-boot-starter-aop`, `spring-boot-starter-mail`, `flyway-core`, `flyway-database-postgresql`, `postgresql` driver, `lombok`, `mapstruct` + `mapstruct-processor`, `springdoc-openapi-starter-webmvc-ui`, `jjwt-api`/`jjwt-impl`/`jjwt-jackson`
-- [ ] Test dependencies: `spring-boot-starter-test`, `spring-security-test`, `testcontainers` (junit-jupiter, postgresql)
-- [ ] Create the package tree shown above
-- [ ] `application.yml`: shared configuration (app name, port, JSON date format)
-- [ ] `application-dev.yml`: local datasource, `spring.jpa.show-sql=true`, Flyway enabled, dummy SMTP config (e.g. MailHog/Mailtrap)
-- [ ] `application-test.yml`: Testcontainers datasource
-- [ ] `application-prod.yml`: datasource and JWT secrets via environment variables
-- [ ] Flyway script `V1__init_schema.sql` (users, roles, permissions, role_user, role_permission, activation_tokens, blacklisted_tokens, password_reset_tokens tables)
-- [ ] `GlobalExceptionHandler` (`@RestControllerAdvice`): `ResourceNotFoundException` (404), `MethodArgumentNotValidException` (400), `BusinessRuleException` (422), `InvalidTokenException` (400), `BadCredentialsException`/`LockedException`/`DisabledException` (401), generic `Exception` (500)
-- [ ] Standard `ErrorResponse` DTO: `timestamp`, `status`, `error`, `message`, `path`, `fieldErrors`
-- [ ] Generic `ApiResponse<T>` and `PageResponse<T>` DTOs (`dto/common/`)
-- [ ] `LoggingAspect` and `ExecutionTimeAspect` (`aspect/`)
-- [ ] `OpenApiConfig`: "Authorize" button (Bearer JWT) in Swagger UI
-- [ ] Actuator: `health`, `info`, `metrics` in dev; `health` only in prod
-- [ ] Structured logging (`logback-spring.xml`)
-- [ ] `CorsConfig`
-- [ ] `AsyncConfig` (`@EnableAsync`, dedicated `ThreadPoolTaskExecutor` for sending emails)
-- [ ] `SchedulingConfig` (`@EnableScheduling`)
-- [ ] Multi-stage `Dockerfile` + `docker-compose.yml` (app + PostgreSQL + MailHog to test emails locally)
-- [ ] `.github/workflows/ci.yml`: Maven build + tests
-- [ ] Branch `README` explaining the configuration choices
+- [x] Initialize the project via Spring Initializr (Maven, Java 17, Spring Boot 3.5.16)
+- [x] Dependencies: `spring-boot-starter-web`, `spring-boot-starter-data-jpa`, `spring-boot-starter-validation`, `spring-boot-starter-actuator`, `spring-boot-starter-security`, `spring-boot-starter-aop`, `spring-boot-starter-mail`, `flyway-core`, `flyway-database-postgresql`, `postgresql` driver, `lombok`, `mapstruct` + `mapstruct-processor`, `springdoc-openapi-starter-webmvc-ui`, `jjwt-api`/`jjwt-impl`/`jjwt-jackson`
+- [x] Test dependencies: `spring-boot-starter-test`, `spring-security-test`, `testcontainers` (junit-jupiter, postgresql)
+- [x] Create the package tree shown above
+- [x] `application.yml`: shared configuration (app name, port, JSON date format)
+- [x] `application-dev.yml`: local datasource, `spring.jpa.show-sql=true`, Flyway enabled, dummy SMTP config (e.g. MailHog/Mailtrap)
+- [x] `application-test.yml`: Testcontainers datasource
+- [x] `application-prod.yml`: datasource and JWT secrets via environment variables
+- [x] Flyway script `V1__init_schema.sql` (users, roles, permissions, role_user, role_permission, activation_tokens, blacklisted_tokens, password_reset_tokens tables)
+- [x] `GlobalExceptionHandler` (`@RestControllerAdvice`): `ResourceNotFoundException` (404), `MethodArgumentNotValidException` (400), `BusinessRuleException` (422), `InvalidTokenException` (400), `BadCredentialsException`/`LockedException`/`DisabledException` (401), generic `Exception` (500)
+- [x] Standard `ErrorResponse` DTO: `timestamp`, `status`, `error`, `message`, `path`, `fieldErrors`
+- [x] Generic `ApiResponse<T>` and `PageResponse<T>` DTOs (`dto/common/`)
+- [x] `LoggingAspect` and `ExecutionTimeAspect` (`aspect/`)
+- [x] `OpenApiConfig`: "Authorize" button (Bearer JWT) in Swagger UI
+- [x] Actuator: `health`, `info`, `metrics` in dev; `health` only in prod
+- [x] Structured logging (`logback-spring.xml`)
+- [x] `CorsConfig`
+- [x] `AsyncConfig` (`@EnableAsync`, dedicated `ThreadPoolTaskExecutor` for sending emails)
+- [x] `SchedulingConfig` (`@EnableScheduling`)
+- [x] Multi-stage `Dockerfile` + `docker-compose.yml` (app + PostgreSQL + MailHog to test emails locally)
+- [x] `.github/workflows/ci.yml`: Maven build + tests
+- [x] Branch `README` explaining the configuration choices (see below)
+
+### Configuration notes
+
+- **`hibernate.ddl-auto` is `validate` in every profile**, never `update` or `create`. Flyway's
+  `V1__init_schema.sql` is the single source of truth for the schema; Hibernate only checks
+  that entity mappings agree with it once `feature/users`/`feature/roles-permissions` add the
+  entities.
+- **Structured logging combines two mechanisms on purpose.** `logback-spring.xml` includes
+  Spring Boot's own default appenders instead of redefining them, and adds a prod-only
+  `file-appender.xml` include via `<springProfile name="prod">`. The actual JSON formatting
+  comes from Spring Boot's native `logging.structured.format.console`/`.file` properties (set
+  to `ecs` in `application-prod.yml`), so no extra dependency or hand-written JSON encoder was
+  needed.
+- **`CorsConfig` is annotated `@Profile("dev")`.** Only a local frontend dev server
+  (`localhost:4200`) gets a CORS exemption; prod is expected to declare its own, narrower
+  policy once a real frontend origin exists.
+- **Testcontainers only, no H2.** `application-test.yml` declares no datasource at all:
+  `TestcontainersConfiguration`'s `@ServiceConnection` `PostgreSQLContainer` bean wires the
+  datasource automatically. Real PostgreSQL in tests avoids behavioral differences between the
+  two engines (types, constraints, SQL dialect) that would otherwise only surface in
+  production.
+- **`application-prod.yml`'s SMTP auth/STARTTLS are overridable via `MAIL_SMTP_AUTH`/
+  `MAIL_SMTP_STARTTLS`, defaulting to `true`.** `docker-compose.yml` sets both to `false` so
+  the `app` service can talk to the bundled MailHog container, which supports neither; a real
+  deployment leaves the defaults or points at its actual SMTP provider's requirements.
+- **`LoggingAspect` redacts record components named "password" or "token" (case insensitive)
+  via reflection**, rather than requiring every future DTO to implement a masking interface.
+  Any record-based request/response added in later branches is covered automatically.
+- **`GlobalExceptionHandler` already handles `BadCredentialsException`/`LockedException`/
+  `DisabledException`** even though `SecurityConfig` and the login flow only arrive in
+  `feature/auth`: `spring-boot-starter-security` is already a dependency, and centralizing the
+  401 mapping here avoids revisiting this class later.
 
 ## feature/users
 

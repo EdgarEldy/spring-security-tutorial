@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-spring_security_tutorial}
+      POSTGRES_USER: ${POSTGRES_USER:-spring_security_tutorial}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-spring_security_tutorial}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-spring_security_tutorial}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: ${DB_URL:-jdbc:postgresql://db:5432/spring_security_tutorial}
+      DB_USERNAME: ${DB_USERNAME:-spring_security_tutorial}
+      DB_PASSWORD: ${DB_PASSWORD:-spring_security_tutorial}
+      JWT_SECRET: ${JWT_SECRET:-docker-compose-demo-jwt-secret-please-override-in-real-prod-987654321}
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_SMTP_AUTH: "false"
+      MAIL_SMTP_STARTTLS: "false"
+    ports:
+      - "8080:8080"
+
+volumes:
+  db-data:
