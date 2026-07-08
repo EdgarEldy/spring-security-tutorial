@@ -8,7 +8,7 @@ import java.util.List;
  * {@code ApiResponse<Void>} whenever {@link GlobalExceptionHandler} handles
  * an exception, so clients get more than just a plain message string.
  * <p>
- * Created edgar.muhamyangabo on 7/8/26
+ * Created by edgar.muhamyangabo on 7/8/26
  * Author : edgar.muhamyangabo
  * Date : 7/8/26
  * Project : spring-security-tutorial
@@ -27,7 +27,7 @@ public record ErrorResponse(
      * a request body (see {@link GlobalExceptionHandler} handling of
      * {@code MethodArgumentNotValidException}).
      * <p>
-     * Created edgar.muhamyangabo on 7/8/26
+     * Created by edgar.muhamyangabo on 7/8/26
      * Author : edgar.muhamyangabo
      * Date : 7/8/26
      * Project : spring-security-tutorial

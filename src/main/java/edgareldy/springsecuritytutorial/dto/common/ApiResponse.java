@@ -6,7 +6,7 @@ import java.time.Instant;
  * Generic envelope wrapping every API response, success or error, so all
  * endpoints share the same response contract.
  * <p>
- * Created edgar.muhamyangabo on 7/8/26
+ * Created by edgar.muhamyangabo on 7/8/26
  * Author : edgar.muhamyangabo
  * Date : 7/8/26
  * Project : spring-security-tutorial

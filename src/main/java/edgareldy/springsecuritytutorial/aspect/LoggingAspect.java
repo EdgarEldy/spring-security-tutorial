@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
  * "password" or "token" (case insensitive) are redacted before logging, so
  * raw credentials and JWTs never end up in application logs.
  * <p>
- * Created edgar.muhamyangabo on 7/8/26
+ * Created by edgar.muhamyangabo on 7/8/26
  * Author : edgar.muhamyangabo
  * Date : 7/8/26
  * Project : spring-security-tutorial

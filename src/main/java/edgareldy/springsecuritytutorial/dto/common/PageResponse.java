@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
  * Generic paginated content DTO used as the {@code data} payload of
  * {@link ApiResponse} on every list endpoint, instead of a plain list.
  * <p>
- * Created edgar.muhamyangabo on 7/8/26
+ * Created by edgar.muhamyangabo on 7/8/26
  * Author : edgar.muhamyangabo
  * Date : 7/8/26
  * Project : spring-security-tutorial

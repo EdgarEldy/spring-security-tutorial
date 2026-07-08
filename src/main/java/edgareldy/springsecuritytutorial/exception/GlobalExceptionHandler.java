@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * {@code ApiResponse<ErrorResponse>}, so callers never have to parse a
  * different error shape depending on which endpoint failed.
  * <p>
- * Created edgar.muhamyangabo on 7/8/26
+ * Created by edgar.muhamyangabo on 7/8/26
  * Author : edgar.muhamyangabo
  * Date : 7/8/26
  * Project : spring-security-tutorial

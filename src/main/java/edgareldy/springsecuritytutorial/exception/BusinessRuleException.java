@@ -5,7 +5,7 @@ package edgareldy.springsecuritytutorial.exception;
  * rule (e.g. an ADMIN trying to lock their own account).
  * Caught by {@link GlobalExceptionHandler} and translated into a 422 response.
  * <p>
- * Created edgar.muhamyangabo on 7/8/26
+ * Created by edgar.muhamyangabo on 7/8/26
  * Author : edgar.muhamyangabo
  * Date : 7/8/26
  * Project : spring-security-tutorial
