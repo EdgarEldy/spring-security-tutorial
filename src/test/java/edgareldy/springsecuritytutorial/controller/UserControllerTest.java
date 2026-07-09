@@ -8,12 +8,14 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edgareldy.springsecuritytutorial.config.MethodSecurityConfig;
+import edgareldy.springsecuritytutorial.security.CustomPermissionEvaluator;
 import edgareldy.springsecuritytutorial.dto.common.PageResponse;
 import edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserResponse;
@@ -44,7 +46,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * Project : spring-security-tutorial
  */
 @WebMvcTest(UserController.class)
-@Import(MethodSecurityConfig.class)
+@Import({MethodSecurityConfig.class, CustomPermissionEvaluator.class})
 @AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
@@ -231,6 +233,51 @@ class UserControllerTest {
     @WithMockUser(roles = "USER")
     void unlockReturns403ForNonAdmin() throws Exception {
         mockMvc.perform(patch("/api/users/1/unlock"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void assignRoleReturns200ForAdmin() throws Exception {
+        UserResponse withRole = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of("ADMIN"));
+        when(userService.assignRole(1L, 2L)).thenReturn(withRole);
+
+        mockMvc.perform(post("/api/users/1/roles/2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.roles[0]").value("ADMIN"));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void assignRoleReturns403ForNonAdmin() throws Exception {
+        mockMvc.perform(post("/api/users/1/roles/2"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void assignRoleReturns422WhenAlreadyAssigned() throws Exception {
+        when(userService.assignRole(1L, 2L))
+                .thenThrow(new BusinessRuleException("Role 2 is already assigned to user 1"));
+
+        mockMvc.perform(post("/api/users/1/roles/2"))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void removeRoleReturns200ForAdmin() throws Exception {
+        when(userService.removeRole(1L, 2L)).thenReturn(owner());
+
+        mockMvc.perform(delete("/api/users/1/roles/2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void removeRoleReturns403ForNonAdmin() throws Exception {
+        mockMvc.perform(delete("/api/users/1/roles/2"))
                 .andExpect(status().isForbidden());
     }
 }
