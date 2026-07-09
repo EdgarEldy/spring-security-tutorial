@@ -22,35 +22,49 @@ class CustomPermissionEvaluatorTest {
 
     @Test
     void hasPermissionReturnsTrueWhenAuthorityPresent() {
-        Authentication authentication = authenticationWithAuthorities("PERMISSION_PRODUCT_WRITE");
+        Authentication authentication = authenticationWithAuthorities("PERMISSION_USER:CREATE");
 
-        assertThat(evaluator.hasPermission(authentication, "PRODUCT", "WRITE")).isTrue();
+        assertThat(evaluator.hasPermission(authentication, "USER", "CREATE")).isTrue();
     }
 
     @Test
     void hasPermissionIsCaseInsensitiveOnResourceAndAction() {
-        Authentication authentication = authenticationWithAuthorities("PERMISSION_PRODUCT_WRITE");
+        Authentication authentication = authenticationWithAuthorities("PERMISSION_USER:CREATE");
 
-        assertThat(evaluator.hasPermission(authentication, "product", "write")).isTrue();
+        assertThat(evaluator.hasPermission(authentication, "user", "create")).isTrue();
     }
 
     @Test
     void hasPermissionReturnsFalseWhenAuthorityAbsent() {
-        Authentication authentication = authenticationWithAuthorities("PERMISSION_PRODUCT_READ");
+        Authentication authentication = authenticationWithAuthorities("PERMISSION_USER:READ");
 
-        assertThat(evaluator.hasPermission(authentication, "PRODUCT", "WRITE")).isFalse();
+        assertThat(evaluator.hasPermission(authentication, "USER", "CREATE")).isFalse();
     }
 
     @Test
     void hasPermissionReturnsFalseWhenAuthenticationIsNull() {
-        assertThat(evaluator.hasPermission(null, "PRODUCT", "WRITE")).isFalse();
+        assertThat(evaluator.hasPermission(null, "USER", "CREATE")).isFalse();
+    }
+
+    @Test
+    void hasPermissionReturnsFalseWhenTargetDomainObjectIsNull() {
+        Authentication authentication = authenticationWithAuthorities("PERMISSION_USER:CREATE");
+
+        assertThat(evaluator.hasPermission(authentication, null, "CREATE")).isFalse();
+    }
+
+    @Test
+    void hasPermissionReturnsFalseWhenPermissionIsNull() {
+        Authentication authentication = authenticationWithAuthorities("PERMISSION_USER:CREATE");
+
+        assertThat(evaluator.hasPermission(authentication, "USER", null)).isFalse();
     }
 
     @Test
     void targetIdOverloadDelegatesToResourceActionCheck() {
-        Authentication authentication = authenticationWithAuthorities("PERMISSION_PRODUCT_WRITE");
+        Authentication authentication = authenticationWithAuthorities("PERMISSION_USER:CREATE");
 
-        assertThat(evaluator.hasPermission(authentication, 1L, "PRODUCT", "WRITE")).isTrue();
+        assertThat(evaluator.hasPermission(authentication, 1L, "USER", "CREATE")).isTrue();
     }
 
     private Authentication authenticationWithAuthorities(String... authorities) {
