@@ -2,18 +2,25 @@ package edgareldy.springsecuritytutorial.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
@@ -21,9 +28,12 @@ import org.springframework.security.core.userdetails.UserDetails;
  * {@link UserDetails} implementation authenticated against once
  * feature/auth wires a {@code UserDetailsService} around it.
  * <p>
- * {@link #getAuthorities()} returns an empty list for now: the {@code roles}
- * relation is added in feature/roles-permissions, which will replace this
- * with the user's actual role/permission authorities.
+ * {@link #getAuthorities()} derives one {@code ROLE_<roleName>} authority
+ * per assigned {@link Role} and one {@code PERMISSION_<resource>_<action>}
+ * authority per permission granted through those roles, so
+ * {@code hasRole(...)} and {@code CustomPermissionEvaluator}-backed
+ * {@code hasPermission(...)} expressions both work directly off this
+ * collection.
  * <p>
  * Created by edgar.muhamyangabo on 7/9/26
  * Author : edgar.muhamyangabo
@@ -37,6 +47,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
 public class User implements UserDetails {
 
     @Id
@@ -61,9 +72,25 @@ public class User implements UserDetails {
     @Column(name = "account_locked", nullable = false)
     private boolean accountLocked;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "role_user",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @Builder.Default
+    private Set<Role> roles = new HashSet<>();
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        for (Role role : roles) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
+            for (Permission permission : role.getPermissions()) {
+                authorities.add(new SimpleGrantedAuthority(
+                        "PERMISSION_" + permission.getResource() + "_" + permission.getAction()));
+            }
+        }
+        return authorities;
     }
 
     @Override
