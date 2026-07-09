@@ -18,6 +18,7 @@ import edgareldy.springsecuritytutorial.dto.common.PageResponse;
 import edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserResponse;
 import edgareldy.springsecuritytutorial.exception.BusinessRuleException;
+import edgareldy.springsecuritytutorial.exception.ResourceNotFoundException;
 import edgareldy.springsecuritytutorial.service.UserService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -154,6 +155,19 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(blank)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateProfileReturns404WhenMissing() throws Exception {
+        UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
+        when(userService.updateProfile(eq(99L), any()))
+                .thenThrow(new ResourceNotFoundException("User not found with id 99"));
+
+        mockMvc.perform(put("/api/users/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
