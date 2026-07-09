@@ -153,6 +153,14 @@ class RoleServiceImplTest {
     }
 
     @Test
+    void deleteThrowsWhenMissing() {
+        when(roleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> roleService.delete(99L))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
     void assignPermissionAddsPermissionWhenNotAlreadyAssigned() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(permissionRepository.findById(1L)).thenReturn(Optional.of(permission));
@@ -186,6 +194,16 @@ class RoleServiceImplTest {
     }
 
     @Test
+    void assignPermissionThrowsWhenRoleMissing() {
+        when(roleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> roleService.assignPermission(99L, 1L))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(permissionRepository, never()).findById(any());
+    }
+
+    @Test
     void removePermissionRemovesWhenAssigned() {
         role.getPermissions().add(permission);
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
@@ -207,5 +225,15 @@ class RoleServiceImplTest {
                 .isInstanceOf(BusinessRuleException.class);
 
         verify(roleRepository, never()).save(any());
+    }
+
+    @Test
+    void removePermissionThrowsWhenRoleMissing() {
+        when(roleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> roleService.removePermission(99L, 1L))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(permissionRepository, never()).findById(any());
     }
 }
