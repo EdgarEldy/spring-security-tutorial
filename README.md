@@ -430,12 +430,21 @@ Technical foundation shared by the whole project, to be merged first into `devel
 
 ### Configuration notes and deviations
 
-- **`User.getAuthorities()` now derives real authorities**: one `ROLE_<roleName>` per
-  assigned role, one `PERMISSION_<resource>_<action>` per permission granted through those
-  roles. Replaces the empty list `feature/users` used as a placeholder.
-- **`CustomPermissionEvaluator` checks `PERMISSION_<RESOURCE>_<ACTION>` authorities directly**,
-  not a loaded target entity. `hasPermission('PRODUCT', 'WRITE')` resolves to checking for a
-  `PERMISSION_PRODUCT_WRITE` authority on the current `Authentication`. This keeps permission
+- **Permission naming convention: `RESOURCE:ACTION`** (colon-separated, both upper-case), e.g.
+  `USER:CREATE`, `USER:READ`, `USER:UPDATE`, `USER:DELETE`. `resource`/`action` stay separate
+  columns on `Permission` (schema already fixed in `feature/core-architecture`'s V1 migration);
+  the colon only appears where the pair is combined into a single string, i.e. the derived
+  Spring Security authority.
+- **`User.getAuthorities()` now derives real authorities**: one `ROLE_<ROLENAME>` per assigned
+  role, one `PERMISSION_<RESOURCE>:<ACTION>` per permission granted through those roles, both
+  upper-cased regardless of how `roleName`/`resource`/`action` were stored (neither
+  `RoleRequest`/`PermissionRequest` nor the database enforce a canonical case, and `hasRole`/
+  `hasPermission` compare against upper-case strings; storing mixed-case data without this
+  normalization silently breaks every authorization check for that role/permission). Replaces
+  the empty list `feature/users` used as a placeholder.
+- **`CustomPermissionEvaluator` checks `PERMISSION_<RESOURCE>:<ACTION>` authorities directly**,
+  not a loaded target entity. `hasPermission('USER', 'CREATE')` resolves to checking for a
+  `PERMISSION_USER:CREATE` authority on the current `Authentication`. This keeps permission
   checks resource/action based without needing `UserDetailsServiceImpl` (not built until
   `feature/auth`) to supply a fully hydrated `User` principal; it also makes the evaluator
   trivially unit-testable with a plain `Authentication` built from
