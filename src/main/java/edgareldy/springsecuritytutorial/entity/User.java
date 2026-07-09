@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,7 +34,11 @@ import org.springframework.security.core.userdetails.UserDetails;
  * authority per permission granted through those roles, so
  * {@code hasRole(...)} and {@code CustomPermissionEvaluator}-backed
  * {@code hasPermission(...)} expressions both work directly off this
- * collection.
+ * collection. Role names and permission resource/action are upper-cased
+ * here, since neither {@code RoleRequest}/{@code PermissionRequest} nor the
+ * database enforce a canonical case, and {@code hasRole(...)}/
+ * {@link edgareldy.springsecuritytutorial.security.CustomPermissionEvaluator}
+ * both compare against upper-case authority strings.
  * <p>
  * Created by edgar.muhamyangabo on 7/9/26
  * Author : edgar.muhamyangabo
@@ -84,10 +89,12 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
         for (Role role : roles) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
+            authorities.add(new SimpleGrantedAuthority(
+                    "ROLE_" + role.getRoleName().toUpperCase(Locale.ROOT)));
             for (Permission permission : role.getPermissions()) {
                 authorities.add(new SimpleGrantedAuthority(
-                        "PERMISSION_" + permission.getResource() + "_" + permission.getAction()));
+                        "PERMISSION_" + permission.getResource().toUpperCase(Locale.ROOT)
+                                + "_" + permission.getAction().toUpperCase(Locale.ROOT)));
             }
         }
         return authorities;
