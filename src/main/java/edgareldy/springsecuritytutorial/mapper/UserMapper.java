@@ -3,7 +3,10 @@ package edgareldy.springsecuritytutorial.mapper;
 import edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserResponse;
+import edgareldy.springsecuritytutorial.entity.Role;
 import edgareldy.springsecuritytutorial.entity.User;
+import java.util.List;
+import java.util.Set;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -29,6 +32,7 @@ public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "enabled", ignore = true)
     @Mapping(target = "accountLocked", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     User toEntity(UserRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -36,5 +40,10 @@ public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "enabled", ignore = true)
     @Mapping(target = "accountLocked", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     void updateProfile(UpdateProfileRequest request, @MappingTarget User user);
+
+    default List<String> mapRoleNames(Set<Role> roles) {
+        return roles.stream().map(Role::getRoleName).sorted().toList();
+    }
 }

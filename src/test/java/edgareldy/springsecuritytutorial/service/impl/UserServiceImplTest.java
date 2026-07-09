@@ -11,10 +11,12 @@ import edgareldy.springsecuritytutorial.dto.common.PageResponse;
 import edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserResponse;
+import edgareldy.springsecuritytutorial.entity.Role;
 import edgareldy.springsecuritytutorial.entity.User;
 import edgareldy.springsecuritytutorial.exception.BusinessRuleException;
 import edgareldy.springsecuritytutorial.exception.ResourceNotFoundException;
 import edgareldy.springsecuritytutorial.mapper.UserMapper;
+import edgareldy.springsecuritytutorial.repository.RoleRepository;
 import edgareldy.springsecuritytutorial.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +48,9 @@ class UserServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
     private UserMapper userMapper;
 
     @Mock
@@ -62,7 +67,7 @@ class UserServiceImplTest {
         user = User.builder()
                 .id(1L).firstName("Ada").lastName("Lovelace")
                 .email("ada@example.com").password("hashed").enabled(true).accountLocked(false).build();
-        userResponse = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false);
+        userResponse = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());
     }
 
     @Test
@@ -133,7 +138,7 @@ class UserServiceImplTest {
     @Test
     void updateProfileAppliesRequest() {
         UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
-        UserResponse updated = new UserResponse(1L, "Ada", "Byron", "ada@example.com", true, false);
+        UserResponse updated = new UserResponse(1L, "Ada", "Byron", "ada@example.com", true, false, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(updated);
@@ -171,7 +176,7 @@ class UserServiceImplTest {
 
     @Test
     void lockLocksAccountWhenTargetDiffersFromCaller() {
-        UserResponse locked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, true);
+        UserResponse locked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, true, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(locked);
@@ -200,7 +205,7 @@ class UserServiceImplTest {
     @Test
     void unlockUnlocksAccount() {
         user.setAccountLocked(true);
-        UserResponse unlocked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false);
+        UserResponse unlocked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(unlocked);
@@ -215,6 +220,96 @@ class UserServiceImplTest {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.unlock(99L))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void assignRoleAddsRoleWhenNotAlreadyAssigned() {
+        Role role = Role.builder().id(1L).roleName("ADMIN").build();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        userService.assignRole(1L, 1L);
+
+        assertThat(user.getRoles()).contains(role);
+    }
+
+    @Test
+    void assignRoleThrowsWhenAlreadyAssigned() {
+        Role role = Role.builder().id(1L).roleName("ADMIN").build();
+        user.getRoles().add(role);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+
+        assertThatThrownBy(() -> userService.assignRole(1L, 1L))
+                .isInstanceOf(BusinessRuleException.class);
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void assignRoleThrowsWhenRoleMissing() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.assignRole(1L, 99L))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void assignRoleThrowsWhenUserMissing() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.assignRole(99L, 1L))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(roleRepository, never()).findById(any());
+    }
+
+    @Test
+    void removeRoleRemovesWhenAssigned() {
+        Role role = Role.builder().id(1L).roleName("ADMIN").build();
+        user.getRoles().add(role);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        userService.removeRole(1L, 1L);
+
+        assertThat(user.getRoles()).doesNotContain(role);
+    }
+
+    @Test
+    void removeRoleThrowsWhenNotAssigned() {
+        Role role = Role.builder().id(1L).roleName("ADMIN").build();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+
+        assertThatThrownBy(() -> userService.removeRole(1L, 1L))
+                .isInstanceOf(BusinessRuleException.class);
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void removeRoleThrowsWhenUserMissing() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.removeRole(99L, 1L))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(roleRepository, never()).findById(any());
+    }
+
+    @Test
+    void removeRoleThrowsWhenRoleMissing() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.removeRole(1L, 99L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 }

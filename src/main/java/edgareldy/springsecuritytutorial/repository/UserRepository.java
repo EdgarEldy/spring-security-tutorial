@@ -2,6 +2,9 @@ package edgareldy.springsecuritytutorial.repository;
 
 import edgareldy.springsecuritytutorial.entity.User;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -14,7 +17,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    /**
+     * Overrides the base paginated find to eagerly fetch each user's roles,
+     * avoiding one extra select per row when the controller maps a page of
+     * users to {@code UserResponse} (which reads {@code roles}).
+     */
+    @EntityGraph(attributePaths = "roles")
+    @Override
+    Page<User> findAll(Pageable pageable);
+
     Optional<User> findByEmailIgnoreCase(String email);
 
     boolean existsByEmailIgnoreCase(String email);
+
+    boolean existsByRoles_Id(Long roleId);
 }

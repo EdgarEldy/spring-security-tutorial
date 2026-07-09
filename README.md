@@ -420,13 +420,55 @@ Technical foundation shared by the whole project, to be merged first into `devel
 
 ### Tasks
 
-- [ ] `Role`, `Permission` entities with `@ManyToMany` relations (`role_user`, `role_permission` as explicit join tables or via `@JoinTable`)
-- [ ] `RoleRepository`, `PermissionRepository`
-- [ ] Corresponding DTOs and mappers
-- [ ] `RoleService`, `PermissionService` interfaces + implementations in `service/impl`
-- [ ] `RoleController`, `PermissionController`
-- [ ] `CustomPermissionEvaluator` (`security/CustomPermissionEvaluator.java`): implements `PermissionEvaluator` to evaluate `@PreAuthorize("hasPermission('PRODUCT','WRITE')")` expressions based on `resource`/`action`
-- [ ] Unit tests (assigning/removing roles and permissions) and integration tests
+- [x] `Role`, `Permission` entities with `@ManyToMany` relations (`role_user`, `role_permission` as explicit join tables or via `@JoinTable`)
+- [x] `RoleRepository`, `PermissionRepository`
+- [x] Corresponding DTOs and mappers
+- [x] `RoleService`, `PermissionService` interfaces + implementations in `service/impl`
+- [x] `RoleController`, `PermissionController`
+- [x] `CustomPermissionEvaluator` (`security/CustomPermissionEvaluator.java`): implements `PermissionEvaluator` to evaluate `@PreAuthorize("hasPermission('PRODUCT','WRITE')")` expressions based on `resource`/`action`
+- [x] Unit tests (assigning/removing roles and permissions) and integration tests
+
+### Configuration notes and deviations
+
+- **Permission naming convention: `RESOURCE:ACTION`** (colon-separated, both upper-case), e.g.
+  `USER:CREATE`, `USER:READ`, `USER:UPDATE`, `USER:DELETE`. `resource`/`action` stay separate
+  columns on `Permission` (schema already fixed in `feature/core-architecture`'s V1 migration);
+  the colon only appears where the pair is combined into a single string, i.e. the derived
+  Spring Security authority.
+- **`User.getAuthorities()` now derives real authorities**: one `ROLE_<ROLENAME>` per assigned
+  role, one `PERMISSION_<RESOURCE>:<ACTION>` per permission granted through those roles, both
+  upper-cased regardless of how `roleName`/`resource`/`action` were stored (neither
+  `RoleRequest`/`PermissionRequest` nor the database enforce a canonical case, and `hasRole`/
+  `hasPermission` compare against upper-case strings; storing mixed-case data without this
+  normalization silently breaks every authorization check for that role/permission). Replaces
+  the empty list `feature/users` used as a placeholder.
+- **`CustomPermissionEvaluator` checks `PERMISSION_<RESOURCE>:<ACTION>` authorities directly**,
+  not a loaded target entity. `hasPermission('USER', 'CREATE')` resolves to checking for a
+  `PERMISSION_USER:CREATE` authority on the current `Authentication`. This keeps permission
+  checks resource/action based without needing `UserDetailsServiceImpl` (not built until
+  `feature/auth`) to supply a fully hydrated `User` principal; it also makes the evaluator
+  trivially unit-testable with a plain `Authentication` built from
+  `SimpleGrantedAuthority`, no Spring context required.
+- **`MethodSecurityConfig` now wires a `MethodSecurityExpressionHandler` bean** with
+  `CustomPermissionEvaluator` set as its `PermissionEvaluator`, using a `static` `@Bean` factory
+  method per Spring Security's documented pattern for method-security infrastructure beans.
+  Any `@WebMvcTest` slice that imports `MethodSecurityConfig` must also import
+  `CustomPermissionEvaluator` (a plain `@Component`, not picked up by `@WebMvcTest` scanning) or
+  context loading fails.
+- **Role and permission deletion refuse to remove a still-referenced row**
+  (`RoleServiceImpl.delete` checks `existsByRoles_Id`, `PermissionServiceImpl.delete` checks
+  `existsByPermissions_Id`), mirroring the non-empty-category rule from `spring-boot-tutorial`.
+  Not explicitly required by this section of the README, but avoids a raw foreign key
+  violation surfacing as an unhelpful 500.
+- **`GET /api/roles` and `GET /api/permissions` return a plain `List<T>`, not
+  `PageResponse<T>`**, unlike `GET /api/users`: the README describes these as a plain "list",
+  not a paginated one, and both tables are expected to stay small (admin-managed reference
+  data).
+- **Role/permission assignment reuses `Set.add`/`Set.remove` return values** (`Permission`,
+  `Role`, and `User` all have id-based `equals`/`hashCode`) to detect "already assigned" and
+  "not assigned" without an extra existence query.
+- **`UserResponse` now includes `roles`** (role names only, not their permissions). Every
+  existing construction site from `feature/users` (mapper, tests) was updated accordingly.
 
 ## feature/tokens
 

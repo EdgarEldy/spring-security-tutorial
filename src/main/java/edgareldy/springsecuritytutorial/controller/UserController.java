@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -96,6 +97,20 @@ public class UserController {
     @Operation(summary = "Unlock a user account")
     public ApiResponse<UserResponse> unlock(@PathVariable Long id) {
         return ApiResponse.success(userService.unlock(id), "User unlocked successfully");
+    }
+
+    @PostMapping("/{userId}/roles/{roleId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Assign a role to a user")
+    public ApiResponse<UserResponse> assignRole(@PathVariable Long userId, @PathVariable Long roleId) {
+        return ApiResponse.success(userService.assignRole(userId, roleId), "Role assigned successfully");
+    }
+
+    @DeleteMapping("/{userId}/roles/{roleId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Remove a role from a user")
+    public ApiResponse<UserResponse> removeRole(@PathVariable Long userId, @PathVariable Long roleId) {
+        return ApiResponse.success(userService.removeRole(userId, roleId), "Role removed successfully");
     }
 
     private void assertAdminOrOwner(Long id) {
