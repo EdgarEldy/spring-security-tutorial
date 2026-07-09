@@ -33,4 +33,8 @@ public interface UserService {
     UserResponse lock(Long id, Long currentUserId);
 
     UserResponse unlock(Long id);
+
+    UserResponse assignRole(Long userId, Long roleId);
+
+    UserResponse removeRole(Long userId, Long roleId);
 }

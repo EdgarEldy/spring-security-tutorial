@@ -4,10 +4,12 @@ import edgareldy.springsecuritytutorial.dto.common.PageResponse;
 import edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserResponse;
+import edgareldy.springsecuritytutorial.entity.Role;
 import edgareldy.springsecuritytutorial.entity.User;
 import edgareldy.springsecuritytutorial.exception.BusinessRuleException;
 import edgareldy.springsecuritytutorial.exception.ResourceNotFoundException;
 import edgareldy.springsecuritytutorial.mapper.UserMapper;
+import edgareldy.springsecuritytutorial.repository.RoleRepository;
 import edgareldy.springsecuritytutorial.repository.UserRepository;
 import edgareldy.springsecuritytutorial.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -96,8 +99,35 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(userRepository.save(user));
     }
 
+    @Override
+    @Transactional
+    public UserResponse assignRole(Long userId, Long roleId) {
+        User user = getUserOrThrow(userId);
+        Role role = getRoleOrThrow(roleId);
+        if (!user.getRoles().add(role)) {
+            throw new BusinessRuleException("Role " + roleId + " is already assigned to user " + userId);
+        }
+        return userMapper.toResponse(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public UserResponse removeRole(Long userId, Long roleId) {
+        User user = getUserOrThrow(userId);
+        Role role = getRoleOrThrow(roleId);
+        if (!user.getRoles().remove(role)) {
+            throw new BusinessRuleException("Role " + roleId + " is not assigned to user " + userId);
+        }
+        return userMapper.toResponse(userRepository.save(user));
+    }
+
     private User getUserOrThrow(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
+    }
+
+    private Role getRoleOrThrow(Long id) {
+        return roleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with id " + id));
     }
 }
