@@ -11,10 +11,12 @@ import edgareldy.springsecuritytutorial.dto.common.PageResponse;
 import edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserResponse;
+import edgareldy.springsecuritytutorial.entity.Role;
 import edgareldy.springsecuritytutorial.entity.User;
 import edgareldy.springsecuritytutorial.exception.BusinessRuleException;
 import edgareldy.springsecuritytutorial.exception.ResourceNotFoundException;
 import edgareldy.springsecuritytutorial.mapper.UserMapper;
+import edgareldy.springsecuritytutorial.repository.RoleRepository;
 import edgareldy.springsecuritytutorial.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +46,9 @@ class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private RoleRepository roleRepository;
 
     @Mock
     private UserMapper userMapper;
@@ -216,5 +221,66 @@ class UserServiceImplTest {
 
         assertThatThrownBy(() -> userService.unlock(99L))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void assignRoleAddsRoleWhenNotAlreadyAssigned() {
+        Role role = Role.builder().id(1L).roleName("ADMIN").build();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        userService.assignRole(1L, 1L);
+
+        assertThat(user.getRoles()).contains(role);
+    }
+
+    @Test
+    void assignRoleThrowsWhenAlreadyAssigned() {
+        Role role = Role.builder().id(1L).roleName("ADMIN").build();
+        user.getRoles().add(role);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+
+        assertThatThrownBy(() -> userService.assignRole(1L, 1L))
+                .isInstanceOf(BusinessRuleException.class);
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void assignRoleThrowsWhenRoleMissing() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.assignRole(1L, 99L))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void removeRoleRemovesWhenAssigned() {
+        Role role = Role.builder().id(1L).roleName("ADMIN").build();
+        user.getRoles().add(role);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toResponse(user)).thenReturn(userResponse);
+
+        userService.removeRole(1L, 1L);
+
+        assertThat(user.getRoles()).doesNotContain(role);
+    }
+
+    @Test
+    void removeRoleThrowsWhenNotAssigned() {
+        Role role = Role.builder().id(1L).roleName("ADMIN").build();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
+
+        assertThatThrownBy(() -> userService.removeRole(1L, 1L))
+                .isInstanceOf(BusinessRuleException.class);
+
+        verify(userRepository, never()).save(any());
     }
 }
