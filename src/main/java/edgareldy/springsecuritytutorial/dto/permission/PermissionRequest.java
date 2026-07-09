@@ -18,4 +18,9 @@ public record PermissionRequest(
         @NotBlank(message = "action must not be blank")
         String action
 ) {
+
+    public PermissionRequest {
+        resource = resource == null ? null : resource.trim();
+        action = action == null ? null : action.trim();
+    }
 }

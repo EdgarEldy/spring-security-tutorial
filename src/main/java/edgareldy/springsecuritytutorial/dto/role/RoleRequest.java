@@ -18,4 +18,8 @@ public record RoleRequest(
         @NotBlank(message = "roleName must not be blank")
         String roleName
 ) {
+
+    public RoleRequest {
+        roleName = roleName == null ? null : roleName.trim();
+    }
 }
