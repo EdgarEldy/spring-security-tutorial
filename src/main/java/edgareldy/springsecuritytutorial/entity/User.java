@@ -30,7 +30,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * feature/auth wires a {@code UserDetailsService} around it.
  * <p>
  * {@link #getAuthorities()} derives one {@code ROLE_<roleName>} authority
- * per assigned {@link Role} and one {@code PERMISSION_<resource>_<action>}
+ * per assigned {@link Role} and one {@code PERMISSION_<RESOURCE>:<ACTION>}
  * authority per permission granted through those roles, so
  * {@code hasRole(...)} and {@code CustomPermissionEvaluator}-backed
  * {@code hasPermission(...)} expressions both work directly off this
@@ -94,7 +94,7 @@ public class User implements UserDetails {
             for (Permission permission : role.getPermissions()) {
                 authorities.add(new SimpleGrantedAuthority(
                         "PERMISSION_" + permission.getResource().toUpperCase(Locale.ROOT)
-                                + "_" + permission.getAction().toUpperCase(Locale.ROOT)));
+                                + ":" + permission.getAction().toUpperCase(Locale.ROOT)));
             }
         }
         return authorities;

@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 
 /**
  * Evaluates {@code @PreAuthorize("hasPermission(resource, action)")}
- * expressions against the {@code PERMISSION_<resource>_<action>} authorities
+ * expressions against the {@code PERMISSION_<RESOURCE>:<ACTION>} authorities
  * {@link edgareldy.springsecuritytutorial.entity.User#getAuthorities()}
  * derives from the caller's roles, rather than against a target domain
  * object instance. This lets permission checks stay resource/action based
- * (e.g. {@code hasPermission('PRODUCT', 'WRITE')}) without needing to load
- * an actual entity to check against.
+ * (e.g. {@code hasPermission('USER', 'CREATE')}) without needing to load an
+ * actual entity to check against.
  * <p>
  * Created by edgar.muhamyangabo on 7/9/26
  * Author : edgar.muhamyangabo
@@ -40,6 +40,6 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
     }
 
     private String expectedAuthority(String resource, String action) {
-        return "PERMISSION_" + resource.toUpperCase(Locale.ROOT) + "_" + action.toUpperCase(Locale.ROOT);
+        return "PERMISSION_" + resource.toUpperCase(Locale.ROOT) + ":" + action.toUpperCase(Locale.ROOT);
     }
 }
