@@ -259,6 +259,16 @@ class UserServiceImplTest {
     }
 
     @Test
+    void assignRoleThrowsWhenUserMissing() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.assignRole(99L, 1L))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(roleRepository, never()).findById(any());
+    }
+
+    @Test
     void removeRoleRemovesWhenAssigned() {
         Role role = Role.builder().id(1L).roleName("ADMIN").build();
         user.getRoles().add(role);
@@ -282,5 +292,24 @@ class UserServiceImplTest {
                 .isInstanceOf(BusinessRuleException.class);
 
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void removeRoleThrowsWhenUserMissing() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.removeRole(99L, 1L))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(roleRepository, never()).findById(any());
+    }
+
+    @Test
+    void removeRoleThrowsWhenRoleMissing() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.removeRole(1L, 99L))
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 }
