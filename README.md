@@ -361,14 +361,44 @@ Technical foundation shared by the whole project, to be merged first into `devel
 
 ### Tasks
 
-- [ ] `User` entity implementing `UserDetails` (or wrapped via `UserDetailsServiceImpl` in `feature/auth`)
-- [ ] `UserRepository` (`findByEmail`, derived queries)
-- [ ] DTOs `UserRequest`/`UserResponse`/`UpdateProfileRequest` (the password never appears in responses)
-- [ ] `UserMapper` (MapStruct, explicit exclusion of the `password` field)
-- [ ] `UserService` interface + `UserServiceImpl` implementation
-- [ ] Business rule: an ADMIN cannot lock their own account
-- [ ] `UserController` with access checks (`@PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")`)
-- [ ] Unit and integration tests (with `@WithMockUser`)
+- [x] `User` entity implementing `UserDetails` (or wrapped via `UserDetailsServiceImpl` in `feature/auth`)
+- [x] `UserRepository` (`findByEmail`, derived queries)
+- [x] DTOs `UserRequest`/`UserResponse`/`UpdateProfileRequest` (the password never appears in responses)
+- [x] `UserMapper` (MapStruct, explicit exclusion of the `password` field)
+- [x] `UserService` interface + `UserServiceImpl` implementation
+- [x] Business rule: an ADMIN cannot lock their own account
+- [x] `UserController` with access checks
+- [x] Unit and integration tests (with `@WithMockUser`)
+
+### Configuration notes and deviations
+
+- **`PasswordEncoderConfig` and `MethodSecurityConfig` were added ahead of `feature/auth`'s full
+  `SecurityConfig`.** `UserServiceImpl.createUser` needs a `PasswordEncoder` to hash passwords,
+  and `UserController`'s ADMIN-only endpoints need `@EnableMethodSecurity` to make
+  `@PreAuthorize` effective, both well before a login endpoint or filter chain exist. Each stays
+  a small, single-purpose `@Configuration` class; `feature/auth` still owns the
+  `SecurityFilterChain`, `JwtAuthFilter`, and the rest of `SecurityConfig`.
+- **`GlobalExceptionHandler` now also maps `AccessDeniedException` to 403.** Both
+  `@PreAuthorize` failures and `UserController`'s manual owner check throw it; without
+  `SecurityConfig`'s `ExceptionTranslationFilter` (added only in `feature/auth`), nothing else
+  would translate it, so it would otherwise fall through to the generic 500 handler.
+- **Deviation from the illustrative `@PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")`
+  expression:** `GET /api/users/{id}` and `PUT /api/users/{id}` check ownership manually against
+  `authentication.getName()` (the caller's email) resolved through `UserService.findByEmail`,
+  instead of `authentication.principal.id`. `User` only becomes the actual Spring Security
+  principal type once `feature/auth` wires `UserDetailsServiceImpl`; until then,
+  `authentication.principal` is a generic Spring Security `UserDetails` with no `id` property.
+  The email-based check is enforceable and testable today with plain `@WithMockUser` and keeps
+  working unchanged once `feature/auth` lands.
+- **The current `Authentication` is read from `SecurityContextHolder` rather than taken as a
+  controller method parameter.** Resolving it as a parameter relies on
+  `HttpServletRequest.getUserPrincipal()`, which is only populated by the security filter chain;
+  reading `SecurityContextHolder` directly matches what `@PreAuthorize` itself checks and what
+  `@WithMockUser` populates in tests, filter chain or not.
+- **`UserRequest` has no matching `POST /api/users` endpoint in this branch.** It backs
+  `UserService.createUser`, called for the first time by `feature/auth`'s
+  `AuthServiceImpl.register`; there is deliberately no public user-creation endpoint outside
+  registration.
 
 ## feature/roles-permissions
 
