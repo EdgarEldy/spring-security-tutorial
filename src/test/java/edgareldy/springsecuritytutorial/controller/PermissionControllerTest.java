@@ -17,6 +17,7 @@ import edgareldy.springsecuritytutorial.config.MethodSecurityConfig;
 import edgareldy.springsecuritytutorial.dto.permission.PermissionRequest;
 import edgareldy.springsecuritytutorial.dto.permission.PermissionResponse;
 import edgareldy.springsecuritytutorial.exception.BusinessRuleException;
+import edgareldy.springsecuritytutorial.exception.ResourceNotFoundException;
 import edgareldy.springsecuritytutorial.security.CustomPermissionEvaluator;
 import edgareldy.springsecuritytutorial.service.PermissionService;
 import java.util.List;
@@ -138,5 +139,15 @@ class PermissionControllerTest {
 
         mockMvc.perform(delete("/api/permissions/1"))
                 .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void deleteReturns404WhenMissing() throws Exception {
+        doThrow(new ResourceNotFoundException("Permission not found with id 99"))
+                .when(permissionService).delete(eq(99L));
+
+        mockMvc.perform(delete("/api/permissions/99"))
+                .andExpect(status().isNotFound());
     }
 }
