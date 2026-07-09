@@ -62,7 +62,7 @@ class UserServiceImplTest {
         user = User.builder()
                 .id(1L).firstName("Ada").lastName("Lovelace")
                 .email("ada@example.com").password("hashed").enabled(true).accountLocked(false).build();
-        userResponse = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false);
+        userResponse = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());
     }
 
     @Test
@@ -133,7 +133,7 @@ class UserServiceImplTest {
     @Test
     void updateProfileAppliesRequest() {
         UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
-        UserResponse updated = new UserResponse(1L, "Ada", "Byron", "ada@example.com", true, false);
+        UserResponse updated = new UserResponse(1L, "Ada", "Byron", "ada@example.com", true, false, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(updated);
@@ -171,7 +171,7 @@ class UserServiceImplTest {
 
     @Test
     void lockLocksAccountWhenTargetDiffersFromCaller() {
-        UserResponse locked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, true);
+        UserResponse locked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, true, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(locked);
@@ -200,7 +200,7 @@ class UserServiceImplTest {
     @Test
     void unlockUnlocksAccount() {
         user.setAccountLocked(true);
-        UserResponse unlocked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false);
+        UserResponse unlocked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(unlocked);

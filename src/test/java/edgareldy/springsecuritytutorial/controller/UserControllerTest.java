@@ -58,11 +58,11 @@ class UserControllerTest {
     private UserService userService;
 
     private static UserResponse owner() {
-        return new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false);
+        return new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());
     }
 
     private static UserResponse someoneElse() {
-        return new UserResponse(2L, "Eve", "Stranger", "eve@example.com", true, false);
+        return new UserResponse(2L, "Eve", "Stranger", "eve@example.com", true, false, List.of());
     }
 
     @Test
@@ -120,7 +120,7 @@ class UserControllerTest {
     @WithMockUser(username = "ada@example.com")
     void updateProfileReturns200ForOwner() throws Exception {
         UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
-        UserResponse updated = new UserResponse(1L, "Ada", "Byron", "ada@example.com", true, false);
+        UserResponse updated = new UserResponse(1L, "Ada", "Byron", "ada@example.com", true, false, List.of());
         when(userService.findByEmail("ada@example.com")).thenReturn(owner());
         when(userService.updateProfile(eq(1L), any())).thenReturn(updated);
 
@@ -188,8 +188,8 @@ class UserControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN", username = "admin@example.com")
     void lockReturns200ForAdmin() throws Exception {
-        UserResponse admin = new UserResponse(2L, "Admin", "Person", "admin@example.com", true, false);
-        UserResponse locked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, true);
+        UserResponse admin = new UserResponse(2L, "Admin", "Person", "admin@example.com", true, false, List.of());
+        UserResponse locked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, true, List.of());
         when(userService.findByEmail("admin@example.com")).thenReturn(admin);
         when(userService.lock(1L, 2L)).thenReturn(locked);
 
@@ -201,7 +201,7 @@ class UserControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN", username = "admin@example.com")
     void lockReturns422WhenAdminLocksThemselves() throws Exception {
-        UserResponse admin = new UserResponse(1L, "Admin", "Person", "admin@example.com", true, false);
+        UserResponse admin = new UserResponse(1L, "Admin", "Person", "admin@example.com", true, false, List.of());
         when(userService.findByEmail("admin@example.com")).thenReturn(admin);
         when(userService.lock(1L, 1L)).thenThrow(new BusinessRuleException("An admin cannot lock their own account"));
 
@@ -219,7 +219,7 @@ class UserControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void unlockReturns200ForAdmin() throws Exception {
-        UserResponse unlocked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false);
+        UserResponse unlocked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());
         when(userService.unlock(1L)).thenReturn(unlocked);
 
         mockMvc.perform(patch("/api/users/1/unlock"))
