@@ -280,4 +280,14 @@ class UserControllerTest {
         mockMvc.perform(delete("/api/users/1/roles/2"))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void removeRoleReturns422WhenNotAssigned() throws Exception {
+        when(userService.removeRole(1L, 2L))
+                .thenThrow(new BusinessRuleException("Role 2 is not assigned to user 1"));
+
+        mockMvc.perform(delete("/api/users/1/roles/2"))
+                .andExpect(status().isUnprocessableEntity());
+    }
 }
