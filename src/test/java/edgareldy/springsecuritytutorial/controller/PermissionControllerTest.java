@@ -19,6 +19,9 @@ import edgareldy.springsecuritytutorial.dto.permission.PermissionResponse;
 import edgareldy.springsecuritytutorial.exception.BusinessRuleException;
 import edgareldy.springsecuritytutorial.exception.ResourceNotFoundException;
 import edgareldy.springsecuritytutorial.security.CustomPermissionEvaluator;
+import edgareldy.springsecuritytutorial.security.JwtService;
+import edgareldy.springsecuritytutorial.security.UserDetailsServiceImpl;
+import edgareldy.springsecuritytutorial.service.BlacklistedTokenService;
 import edgareldy.springsecuritytutorial.service.PermissionService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -36,6 +39,10 @@ import org.springframework.test.web.servlet.MockMvc;
  * {@link PermissionService} mocked. {@link MethodSecurityConfig} and
  * {@link CustomPermissionEvaluator} are imported so the class-level
  * {@code @PreAuthorize("hasRole('ADMIN')")} is genuinely enforced.
+ * {@code JwtService}, {@code BlacklistedTokenService} and
+ * {@code UserDetailsServiceImpl} are mocked purely so the context loads,
+ * since {@code @WebMvcTest} auto-includes {@code JwtAuthFilter} as a
+ * {@code Filter} bean regardless of {@code addFilters}.
  * <p>
  * Created by edgar.muhamyangabo on 7/9/26
  * Author : edgar.muhamyangabo
@@ -55,6 +62,15 @@ class PermissionControllerTest {
 
     @MockitoBean
     private PermissionService permissionService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private BlacklistedTokenService blacklistedTokenService;
+
+    @MockitoBean
+    private UserDetailsServiceImpl userDetailsService;
 
     private static PermissionResponse savedResponse() {
         return new PermissionResponse(1L, "PRODUCT", "WRITE");
