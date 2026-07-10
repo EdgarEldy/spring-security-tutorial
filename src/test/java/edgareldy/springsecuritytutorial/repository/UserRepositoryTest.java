@@ -2,13 +2,18 @@ package edgareldy.springsecuritytutorial.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import edgareldy.springsecuritytutorial.entity.Permission;
+import edgareldy.springsecuritytutorial.entity.Role;
 import edgareldy.springsecuritytutorial.entity.User;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.core.GrantedAuthority;
 
 /**
  * {@code @DataJpaTest} for {@link UserRepository}, backed by a real
@@ -26,6 +31,9 @@ class UserRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TestEntityManager entityManager;
 
     @BeforeEach
     void setUp() {
@@ -59,5 +67,25 @@ class UserRepositoryTest {
     void existsByEmailIgnoreCaseReflectsCurrentData() {
         assertThat(userRepository.existsByEmailIgnoreCase("grace@example.com")).isTrue();
         assertThat(userRepository.existsByEmailIgnoreCase("unknown@example.com")).isFalse();
+    }
+
+    @Test
+    void findByEmailIgnoreCaseEagerlyFetchesRolesAndPermissions_soAuthoritiesWorkAfterDetach() {
+        Permission permission = entityManager.persistAndFlush(
+                Permission.builder().resource("USER").action("CREATE").build());
+        Role role = entityManager.persistAndFlush(
+                Role.builder().roleName("ADMIN").permissions(Set.of(permission)).build());
+        User admin = User.builder()
+                .firstName("Grace").lastName("Hopper").email("admin@example.com")
+                .password("hashed").enabled(true).accountLocked(false).roles(Set.of(role)).build();
+        entityManager.persistAndFlush(admin);
+        entityManager.clear();
+
+        User found = userRepository.findByEmailIgnoreCase("admin@example.com").orElseThrow();
+        entityManager.clear();
+
+        assertThat(found.getAuthorities())
+                .extracting(GrantedAuthority::getAuthority)
+                .containsExactlyInAnyOrder("ROLE_ADMIN", "PERMISSION_USER:CREATE");
     }
 }
