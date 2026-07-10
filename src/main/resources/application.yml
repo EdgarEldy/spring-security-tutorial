@@ -4,6 +4,8 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+  mail:
+    host: ${MAIL_HOST:localhost}
 
 server:
   port: 8080
@@ -11,3 +13,6 @@ server:
 jwt:
   secret: ${JWT_SECRET:dev-only-jwt-secret-please-override-in-production-0123456789}
   expiration-ms: 3600000
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8080}
