@@ -26,6 +26,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Override
     Page<User> findAll(Pageable pageable);
 
+    /**
+     * Eagerly fetches roles and their permissions, so a {@link User}
+     * returned by this method has a fully usable
+     * {@link User#getAuthorities()} even after the transaction/session
+     * that loaded it has closed (e.g. once {@code UserDetailsServiceImpl}
+     * hands it back to {@code JwtAuthFilter}).
+     */
+    @EntityGraph(attributePaths = {"roles", "roles.permissions"})
     Optional<User> findByEmailIgnoreCase(String email);
 
     boolean existsByEmailIgnoreCase(String email);
