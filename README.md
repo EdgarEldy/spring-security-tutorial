@@ -291,28 +291,60 @@ Technical foundation shared by the whole project, to be merged first into `devel
 
 ### Tasks
 
-- [ ] Initialize the project via Spring Initializr (Maven, Java 17, Spring Boot 3.5.16)
-- [ ] Dependencies: `spring-boot-starter-web`, `spring-boot-starter-data-jpa`, `spring-boot-starter-validation`, `spring-boot-starter-actuator`, `spring-boot-starter-security`, `spring-boot-starter-aop`, `spring-boot-starter-mail`, `flyway-core`, `flyway-database-postgresql`, `postgresql` driver, `lombok`, `mapstruct` + `mapstruct-processor`, `springdoc-openapi-starter-webmvc-ui`, `jjwt-api`/`jjwt-impl`/`jjwt-jackson`
-- [ ] Test dependencies: `spring-boot-starter-test`, `spring-security-test`, `testcontainers` (junit-jupiter, postgresql)
-- [ ] Create the package tree shown above
-- [ ] `application.yml`: shared configuration (app name, port, JSON date format)
-- [ ] `application-dev.yml`: local datasource, `spring.jpa.show-sql=true`, Flyway enabled, dummy SMTP config (e.g. MailHog/Mailtrap)
-- [ ] `application-test.yml`: Testcontainers datasource
-- [ ] `application-prod.yml`: datasource and JWT secrets via environment variables
-- [ ] Flyway script `V1__init_schema.sql` (users, roles, permissions, role_user, role_permission, activation_tokens, blacklisted_tokens, password_reset_tokens tables)
-- [ ] `GlobalExceptionHandler` (`@RestControllerAdvice`): `ResourceNotFoundException` (404), `MethodArgumentNotValidException` (400), `BusinessRuleException` (422), `InvalidTokenException` (400), `BadCredentialsException`/`LockedException`/`DisabledException` (401), generic `Exception` (500)
-- [ ] Standard `ErrorResponse` DTO: `timestamp`, `status`, `error`, `message`, `path`, `fieldErrors`
-- [ ] Generic `ApiResponse<T>` and `PageResponse<T>` DTOs (`dto/common/`)
-- [ ] `LoggingAspect` and `ExecutionTimeAspect` (`aspect/`)
-- [ ] `OpenApiConfig`: "Authorize" button (Bearer JWT) in Swagger UI
-- [ ] Actuator: `health`, `info`, `metrics` in dev; `health` only in prod
-- [ ] Structured logging (`logback-spring.xml`)
-- [ ] `CorsConfig`
-- [ ] `AsyncConfig` (`@EnableAsync`, dedicated `ThreadPoolTaskExecutor` for sending emails)
-- [ ] `SchedulingConfig` (`@EnableScheduling`)
-- [ ] Multi-stage `Dockerfile` + `docker-compose.yml` (app + PostgreSQL + MailHog to test emails locally)
-- [ ] `.github/workflows/ci.yml`: Maven build + tests
-- [ ] Branch `README` explaining the configuration choices
+- [x] Initialize the project via Spring Initializr (Maven, Java 17, Spring Boot 3.5.16)
+- [x] Dependencies: `spring-boot-starter-web`, `spring-boot-starter-data-jpa`, `spring-boot-starter-validation`, `spring-boot-starter-actuator`, `spring-boot-starter-security`, `spring-boot-starter-aop`, `spring-boot-starter-mail`, `flyway-core`, `flyway-database-postgresql`, `postgresql` driver, `lombok`, `mapstruct` + `mapstruct-processor`, `springdoc-openapi-starter-webmvc-ui`, `jjwt-api`/`jjwt-impl`/`jjwt-jackson`
+- [x] Test dependencies: `spring-boot-starter-test`, `spring-security-test`, `testcontainers` (junit-jupiter, postgresql)
+- [x] Create the package tree shown above
+- [x] `application.yml`: shared configuration (app name, port, JSON date format)
+- [x] `application-dev.yml`: local datasource, `spring.jpa.show-sql=true`, Flyway enabled, dummy SMTP config (e.g. MailHog/Mailtrap)
+- [x] `application-test.yml`: Testcontainers datasource
+- [x] `application-prod.yml`: datasource and JWT secrets via environment variables
+- [x] Flyway script `V1__init_schema.sql` (users, roles, permissions, role_user, role_permission, activation_tokens, blacklisted_tokens, password_reset_tokens tables)
+- [x] `GlobalExceptionHandler` (`@RestControllerAdvice`): `ResourceNotFoundException` (404), `MethodArgumentNotValidException` (400), `BusinessRuleException` (422), `InvalidTokenException` (400), `BadCredentialsException`/`LockedException`/`DisabledException` (401), generic `Exception` (500)
+- [x] Standard `ErrorResponse` DTO: `timestamp`, `status`, `error`, `message`, `path`, `fieldErrors`
+- [x] Generic `ApiResponse<T>` and `PageResponse<T>` DTOs (`dto/common/`)
+- [x] `LoggingAspect` and `ExecutionTimeAspect` (`aspect/`)
+- [x] `OpenApiConfig`: "Authorize" button (Bearer JWT) in Swagger UI
+- [x] Actuator: `health`, `info`, `metrics` in dev; `health` only in prod
+- [x] Structured logging (`logback-spring.xml`)
+- [x] `CorsConfig`
+- [x] `AsyncConfig` (`@EnableAsync`, dedicated `ThreadPoolTaskExecutor` for sending emails)
+- [x] `SchedulingConfig` (`@EnableScheduling`)
+- [x] Multi-stage `Dockerfile` + `docker-compose.yml` (app + PostgreSQL + MailHog to test emails locally)
+- [x] `.github/workflows/ci.yml`: Maven build + tests
+- [x] Branch `README` explaining the configuration choices (see below)
+
+### Configuration notes
+
+- **`hibernate.ddl-auto` is `validate` in every profile**, never `update` or `create`. Flyway's
+  `V1__init_schema.sql` is the single source of truth for the schema; Hibernate only checks
+  that entity mappings agree with it once `feature/users`/`feature/roles-permissions` add the
+  entities.
+- **Structured logging combines two mechanisms on purpose.** `logback-spring.xml` includes
+  Spring Boot's own default appenders instead of redefining them, and adds a prod-only
+  `file-appender.xml` include via `<springProfile name="prod">`. The actual JSON formatting
+  comes from Spring Boot's native `logging.structured.format.console`/`.file` properties (set
+  to `ecs` in `application-prod.yml`), so no extra dependency or hand-written JSON encoder was
+  needed.
+- **`CorsConfig` is annotated `@Profile("dev")`.** Only a local frontend dev server
+  (`localhost:4200`) gets a CORS exemption; prod is expected to declare its own, narrower
+  policy once a real frontend origin exists.
+- **Testcontainers only, no H2.** `application-test.yml` declares no datasource at all:
+  `TestcontainersConfiguration`'s `@ServiceConnection` `PostgreSQLContainer` bean wires the
+  datasource automatically. Real PostgreSQL in tests avoids behavioral differences between the
+  two engines (types, constraints, SQL dialect) that would otherwise only surface in
+  production.
+- **`application-prod.yml`'s SMTP auth/STARTTLS are overridable via `MAIL_SMTP_AUTH`/
+  `MAIL_SMTP_STARTTLS`, defaulting to `true`.** `docker-compose.yml` sets both to `false` so
+  the `app` service can talk to the bundled MailHog container, which supports neither; a real
+  deployment leaves the defaults or points at its actual SMTP provider's requirements.
+- **`LoggingAspect` redacts record components named "password" or "token" (case insensitive)
+  via reflection**, rather than requiring every future DTO to implement a masking interface.
+  Any record-based request/response added in later branches is covered automatically.
+- **`GlobalExceptionHandler` already handles `BadCredentialsException`/`LockedException`/
+  `DisabledException`** even though `SecurityConfig` and the login flow only arrive in
+  `feature/auth`: `spring-boot-starter-security` is already a dependency, and centralizing the
+  401 mapping here avoids revisiting this class later.
 
 ## feature/users
 
@@ -329,14 +361,44 @@ Technical foundation shared by the whole project, to be merged first into `devel
 
 ### Tasks
 
-- [ ] `User` entity implementing `UserDetails` (or wrapped via `UserDetailsServiceImpl` in `feature/auth`)
-- [ ] `UserRepository` (`findByEmail`, derived queries)
-- [ ] DTOs `UserRequest`/`UserResponse`/`UpdateProfileRequest` (the password never appears in responses)
-- [ ] `UserMapper` (MapStruct, explicit exclusion of the `password` field)
-- [ ] `UserService` interface + `UserServiceImpl` implementation
-- [ ] Business rule: an ADMIN cannot lock their own account
-- [ ] `UserController` with access checks (`@PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")`)
-- [ ] Unit and integration tests (with `@WithMockUser`)
+- [x] `User` entity implementing `UserDetails` (or wrapped via `UserDetailsServiceImpl` in `feature/auth`)
+- [x] `UserRepository` (`findByEmail`, derived queries)
+- [x] DTOs `UserRequest`/`UserResponse`/`UpdateProfileRequest` (the password never appears in responses)
+- [x] `UserMapper` (MapStruct, explicit exclusion of the `password` field)
+- [x] `UserService` interface + `UserServiceImpl` implementation
+- [x] Business rule: an ADMIN cannot lock their own account
+- [x] `UserController` with access checks
+- [x] Unit and integration tests (with `@WithMockUser`)
+
+### Configuration notes and deviations
+
+- **`PasswordEncoderConfig` and `MethodSecurityConfig` were added ahead of `feature/auth`'s full
+  `SecurityConfig`.** `UserServiceImpl.createUser` needs a `PasswordEncoder` to hash passwords,
+  and `UserController`'s ADMIN-only endpoints need `@EnableMethodSecurity` to make
+  `@PreAuthorize` effective, both well before a login endpoint or filter chain exist. Each stays
+  a small, single-purpose `@Configuration` class; `feature/auth` still owns the
+  `SecurityFilterChain`, `JwtAuthFilter`, and the rest of `SecurityConfig`.
+- **`GlobalExceptionHandler` now also maps `AccessDeniedException` to 403.** Both
+  `@PreAuthorize` failures and `UserController`'s manual owner check throw it; without
+  `SecurityConfig`'s `ExceptionTranslationFilter` (added only in `feature/auth`), nothing else
+  would translate it, so it would otherwise fall through to the generic 500 handler.
+- **Deviation from the illustrative `@PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")`
+  expression:** `GET /api/users/{id}` and `PUT /api/users/{id}` check ownership manually against
+  `authentication.getName()` (the caller's email) resolved through `UserService.findByEmail`,
+  instead of `authentication.principal.id`. `User` only becomes the actual Spring Security
+  principal type once `feature/auth` wires `UserDetailsServiceImpl`; until then,
+  `authentication.principal` is a generic Spring Security `UserDetails` with no `id` property.
+  The email-based check is enforceable and testable today with plain `@WithMockUser` and keeps
+  working unchanged once `feature/auth` lands.
+- **The current `Authentication` is read from `SecurityContextHolder` rather than taken as a
+  controller method parameter.** Resolving it as a parameter relies on
+  `HttpServletRequest.getUserPrincipal()`, which is only populated by the security filter chain;
+  reading `SecurityContextHolder` directly matches what `@PreAuthorize` itself checks and what
+  `@WithMockUser` populates in tests, filter chain or not.
+- **`UserRequest` has no matching `POST /api/users` endpoint in this branch.** It backs
+  `UserService.createUser`, called for the first time by `feature/auth`'s
+  `AuthServiceImpl.register`; there is deliberately no public user-creation endpoint outside
+  registration.
 
 ## feature/roles-permissions
 
@@ -358,13 +420,55 @@ Technical foundation shared by the whole project, to be merged first into `devel
 
 ### Tasks
 
-- [ ] `Role`, `Permission` entities with `@ManyToMany` relations (`role_user`, `role_permission` as explicit join tables or via `@JoinTable`)
-- [ ] `RoleRepository`, `PermissionRepository`
-- [ ] Corresponding DTOs and mappers
-- [ ] `RoleService`, `PermissionService` interfaces + implementations in `service/impl`
-- [ ] `RoleController`, `PermissionController`
-- [ ] `CustomPermissionEvaluator` (`security/CustomPermissionEvaluator.java`): implements `PermissionEvaluator` to evaluate `@PreAuthorize("hasPermission('PRODUCT','WRITE')")` expressions based on `resource`/`action`
-- [ ] Unit tests (assigning/removing roles and permissions) and integration tests
+- [x] `Role`, `Permission` entities with `@ManyToMany` relations (`role_user`, `role_permission` as explicit join tables or via `@JoinTable`)
+- [x] `RoleRepository`, `PermissionRepository`
+- [x] Corresponding DTOs and mappers
+- [x] `RoleService`, `PermissionService` interfaces + implementations in `service/impl`
+- [x] `RoleController`, `PermissionController`
+- [x] `CustomPermissionEvaluator` (`security/CustomPermissionEvaluator.java`): implements `PermissionEvaluator` to evaluate `@PreAuthorize("hasPermission('PRODUCT','WRITE')")` expressions based on `resource`/`action`
+- [x] Unit tests (assigning/removing roles and permissions) and integration tests
+
+### Configuration notes and deviations
+
+- **Permission naming convention: `RESOURCE:ACTION`** (colon-separated, both upper-case), e.g.
+  `USER:CREATE`, `USER:READ`, `USER:UPDATE`, `USER:DELETE`. `resource`/`action` stay separate
+  columns on `Permission` (schema already fixed in `feature/core-architecture`'s V1 migration);
+  the colon only appears where the pair is combined into a single string, i.e. the derived
+  Spring Security authority.
+- **`User.getAuthorities()` now derives real authorities**: one `ROLE_<ROLENAME>` per assigned
+  role, one `PERMISSION_<RESOURCE>:<ACTION>` per permission granted through those roles, both
+  upper-cased regardless of how `roleName`/`resource`/`action` were stored (neither
+  `RoleRequest`/`PermissionRequest` nor the database enforce a canonical case, and `hasRole`/
+  `hasPermission` compare against upper-case strings; storing mixed-case data without this
+  normalization silently breaks every authorization check for that role/permission). Replaces
+  the empty list `feature/users` used as a placeholder.
+- **`CustomPermissionEvaluator` checks `PERMISSION_<RESOURCE>:<ACTION>` authorities directly**,
+  not a loaded target entity. `hasPermission('USER', 'CREATE')` resolves to checking for a
+  `PERMISSION_USER:CREATE` authority on the current `Authentication`. This keeps permission
+  checks resource/action based without needing `UserDetailsServiceImpl` (not built until
+  `feature/auth`) to supply a fully hydrated `User` principal; it also makes the evaluator
+  trivially unit-testable with a plain `Authentication` built from
+  `SimpleGrantedAuthority`, no Spring context required.
+- **`MethodSecurityConfig` now wires a `MethodSecurityExpressionHandler` bean** with
+  `CustomPermissionEvaluator` set as its `PermissionEvaluator`, using a `static` `@Bean` factory
+  method per Spring Security's documented pattern for method-security infrastructure beans.
+  Any `@WebMvcTest` slice that imports `MethodSecurityConfig` must also import
+  `CustomPermissionEvaluator` (a plain `@Component`, not picked up by `@WebMvcTest` scanning) or
+  context loading fails.
+- **Role and permission deletion refuse to remove a still-referenced row**
+  (`RoleServiceImpl.delete` checks `existsByRoles_Id`, `PermissionServiceImpl.delete` checks
+  `existsByPermissions_Id`), mirroring the non-empty-category rule from `spring-boot-tutorial`.
+  Not explicitly required by this section of the README, but avoids a raw foreign key
+  violation surfacing as an unhelpful 500.
+- **`GET /api/roles` and `GET /api/permissions` return a plain `List<T>`, not
+  `PageResponse<T>`**, unlike `GET /api/users`: the README describes these as a plain "list",
+  not a paginated one, and both tables are expected to stay small (admin-managed reference
+  data).
+- **Role/permission assignment reuses `Set.add`/`Set.remove` return values** (`Permission`,
+  `Role`, and `User` all have id-based `equals`/`hashCode`) to detect "already assigned" and
+  "not assigned" without an extra existence query.
+- **`UserResponse` now includes `roles`** (role names only, not their permissions). Every
+  existing construction site from `feature/users` (mapper, tests) was updated accordingly.
 
 ## feature/tokens
 
@@ -372,14 +476,39 @@ This branch does not expose public endpoints: it provides the generation/validat
 
 ### Tasks
 
-- [ ] `ActivationToken`, `PasswordResetToken`, `BlacklistedToken` entities
-- [ ] Associated repositories (`findByToken`, `findByJti`, `findByUserIdAndValidatedAtIsNull`, etc.)
-- [ ] `ActivationTokenService` interface + implementation: secure random token generation, expiration (e.g. 24h), validation, `validated_at` marking
-- [ ] `PasswordResetTokenService` interface + implementation: generation, expiration (e.g. 1h), invalidation after use
-- [ ] `BlacklistedTokenService` interface + implementation: adding a JWT to the blacklist on logout, presence check (`existsByJti`) used by `JwtAuthFilter`
-- [ ] `EmailService` interface + `EmailServiceImpl` implementation (`spring-boot-starter-mail`), `sendActivationEmail`, `sendPasswordResetEmail` methods, executed asynchronously (`@Async`)
-- [ ] `TokenCleanupScheduler` (`scheduler/TokenCleanupScheduler.java`): `@Scheduled(cron = "...")` job that purges expired tokens daily (activation, reset, blacklist)
-- [ ] Unit tests (token generation, expiration, validation) and scheduler tests
+- [x] `ActivationToken`, `PasswordResetToken`, `BlacklistedToken` entities
+- [x] Associated repositories (`findByToken`, `existsByJti`, `deleteAllByExpiresAtBefore`/`deleteAllByExpiryDateBefore` for the cleanup scheduler)
+- [x] `ActivationTokenService` interface + implementation: secure random token generation, expiration (e.g. 24h), validation, `validated_at` marking
+- [x] `PasswordResetTokenService` interface + implementation: generation, expiration (e.g. 1h), invalidation after use
+- [x] `BlacklistedTokenService` interface + implementation: adding a JWT to the blacklist on logout, presence check (`existsByJti`) used by `JwtAuthFilter`
+- [x] `EmailService` interface + `EmailServiceImpl` implementation (`spring-boot-starter-mail`), `sendActivationEmail`, `sendPasswordResetEmail` methods, executed asynchronously (`@Async`)
+- [x] `TokenCleanupScheduler` (`scheduler/TokenCleanupScheduler.java`): `@Scheduled(cron = "...")` job that purges expired tokens daily (activation, reset, blacklist)
+- [x] Unit tests (token generation, expiration, validation) and scheduler tests
+
+### Configuration notes and deviations
+
+- **`security/SecureTokenGenerator`** centralizes the `SecureRandom`-based token generation
+  (32 random bytes, URL-safe Base64, no padding) shared by `ActivationTokenService` and
+  `PasswordResetTokenService`, rather than duplicating a `SecureRandom` instance in each.
+- **`PasswordResetTokenServiceImpl.validateAndConsume` deletes the token row on lookup**,
+  before checking expiry, so a token is single-use even on an expired attempt: it can never be
+  replayed once looked up, valid or not.
+- **`ActivationTokenServiceImpl.validate` keeps the row and sets `validated_at`** instead of
+  deleting it, unlike password reset: an activation token's history (when an account was
+  activated) is worth keeping, whereas a password reset token has no value once consumed.
+- **`app.base-url` property** (env override `APP_BASE_URL`, default
+  `http://localhost:8080`) backs the activation/reset links `EmailServiceImpl` builds, so a
+  real deployment only needs an environment variable, not a code change.
+- **`spring.mail.host` now has a default (`localhost`) in the shared `application.yml`.**
+  Spring Boot only auto-configures a `JavaMailSender` bean when `spring.mail.host` is set;
+  without a default, the plain default profile (used by
+  `SpringSecurityTutorialApplicationTests`, no profile active) failed to start once
+  `EmailServiceImpl` required that bean. `application-dev.yml` (MailHog) and
+  `application-prod.yml` (real SMTP host) still override it per profile.
+- **No controller in this branch.** `ActivationTokenService`, `PasswordResetTokenService`,
+  `BlacklistedTokenService`, and `EmailService` are consumed directly by `feature/auth`'s
+  `AuthServiceImpl`, not exposed as DTOs/endpoints, per the README's description of this
+  branch.
 
 ## feature/auth
 
@@ -399,16 +528,58 @@ Final integration branch: full authentication, depends on `users`, `roles-permis
 
 ### Tasks
 
-- [ ] `JwtService` (`security/JwtService.java`): JWT generation (claims: `sub`, `jti`, `roles`, `permissions`, `iat`, `exp`), signature/expiration validation, claims extraction
-- [ ] `JwtAuthFilter` (`OncePerRequestFilter`): extracts the JWT from the `Authorization` header, checks it is not in `blacklisted_tokens` (via `BlacklistedTokenService`), populates the `SecurityContext`
-- [ ] `UserDetailsServiceImpl`: loads a `User` with its roles/permissions for Spring Security
-- [ ] `SecurityConfig` (`SecurityFilterChain`): BCrypt `PasswordEncoder`, `STATELESS` session, CSRF disabled, per-endpoint authorization rules, registration of `JwtAuthFilter`, `CustomPermissionEvaluator`, `CustomAuthenticationEntryPoint` (401), `CustomAccessDeniedHandler` (403)
-- [ ] `AuthService` interface + `AuthServiceImpl` implementation orchestrating `UserService`, `ActivationTokenService`, `PasswordResetTokenService`, `BlacklistedTokenService`, `EmailService`, `JwtService`
-- [ ] Business rule: refuse login if `enabled=false` (`DisabledException`) or `account_locked=true` (`LockedException`)
-- [ ] `AuthController`
-- [ ] OpenAPI documentation with a Bearer JWT security scheme
-- [ ] End-to-end integration tests: register → activate → login → access a protected resource → logout → token rejected after logout
-- [ ] Error case tests: unactivated account, locked account, expired token, already-used token, wrong credentials
+- [x] `JwtService` (`security/JwtService.java`): JWT generation (claims: `sub`, `jti`, `roles`, `permissions`, `iat`, `exp`), signature/expiration validation, claims extraction
+- [x] `JwtAuthFilter` (`OncePerRequestFilter`): extracts the JWT from the `Authorization` header, checks it is not in `blacklisted_tokens` (via `BlacklistedTokenService`), populates the `SecurityContext`
+- [x] `UserDetailsServiceImpl`: loads a `User` with its roles/permissions for Spring Security
+- [x] `SecurityConfig` (`SecurityFilterChain`): BCrypt `PasswordEncoder`, `STATELESS` session, CSRF disabled, per-endpoint authorization rules, registration of `JwtAuthFilter`, `CustomPermissionEvaluator`, `CustomAuthenticationEntryPoint` (401), `CustomAccessDeniedHandler` (403)
+- [x] `AuthService` interface + `AuthServiceImpl` implementation orchestrating `UserService`, `ActivationTokenService`, `PasswordResetTokenService`, `BlacklistedTokenService`, `EmailService`, `JwtService`
+- [x] Business rule: refuse login if `enabled=false` (`DisabledException`) or `account_locked=true` (`LockedException`)
+- [x] `AuthController`
+- [x] OpenAPI documentation with a Bearer JWT security scheme
+- [x] End-to-end integration tests: register → activate → login → access a protected resource → logout → token rejected after logout
+- [x] Error case tests: unactivated account, locked account, expired token, already-used token, wrong credentials
+
+### Configuration notes and deviations
+
+- **`AuthServiceImpl` injects `UserRepository` directly**, in addition to `UserService` and the
+  token/email services. `UserService` only ever returns DTOs, but `ActivationTokenService`,
+  `PasswordResetTokenService`, `BlacklistedTokenService` and `EmailService` all operate on the
+  real `User` entity (they need to persist a foreign key or read `getEmail()`/`getId()`
+  directly). A service reading its own repository is normal layered architecture, not a breach
+  of the contract/impl pattern; only controllers are restricted to service interfaces.
+- **No `ActivateAccountRequest` DTO.** `GET /api/auth/activate-account` takes the token as a
+  query parameter (`@RequestParam String token`), matching how the link emailed to the user
+  works (a clickable URL, not a JSON body), so there is nothing to bind into a record.
+- **`DaoAuthenticationProvider` already enforces the disabled/locked business rule with zero
+  extra code.** The auto-configured `AuthenticationManager` (built from the single
+  `UserDetailsServiceImpl` + `PasswordEncoder` beans) calls `UserDetails.isEnabled()` /
+  `isAccountNonLocked()` before checking the password, throwing `DisabledException` /
+  `LockedException`, both already mapped to 401 by `GlobalExceptionHandler` since
+  `feature/users`. The default `hideUserNotFoundExceptions=true` also converts an unknown
+  email into `BadCredentialsException`, avoiding user enumeration for free.
+- **`UserRepository.findByEmailIgnoreCase` gained `@EntityGraph(attributePaths =
+  {"roles", "roles.permissions"})`.** Both `UserDetailsServiceImpl` and `JwtAuthFilter` need
+  `User.getAuthorities()` to work after the Hibernate session used to load the user is closed
+  (the JWT filter runs outside any `@Transactional` boundary); without eagerly fetching
+  `roles`/`roles.permissions`, accessing them later throws `LazyInitializationException`.
+- **`@WebMvcTest` auto-includes `JwtAuthFilter` as a `Filter` bean regardless of
+  `@AutoConfigureMockMvc(addFilters = false)`.** That flag only skips *applying* filters to
+  requests; the bean still has to be constructed to load the context, so its own dependencies
+  (`JwtService`, `BlacklistedTokenService`, `UserDetailsServiceImpl`) need a `@MockitoBean` in
+  every `@WebMvcTest` slice from this branch onward, including the three controller test
+  classes from earlier branches (`UserControllerTest`, `RoleControllerTest`,
+  `PermissionControllerTest`), which broke once `SecurityConfig`/`JwtAuthFilter` were added.
+- **The end-to-end integration test (`AuthFlowIntegrationTest`) fetches the raw
+  activation/reset token by user id, not by email**, when reading it back from the repository
+  after registration. `ActivationToken.user`/`PasswordResetToken.user` are lazy
+  `@ManyToOne` associations; comparing `token.getUser().getId()` against an id already read
+  inside a transaction is safe, but calling `token.getUser().getEmail()` outside any active
+  Hibernate session throws `LazyInitializationException`.
+- **No SMTP server is required for the test suite to pass.** `EmailServiceImpl` runs
+  `@Async`, and the `AsyncUncaughtExceptionHandler` added in `feature/tokens` swallows (and
+  logs) the connection failure against `localhost:25` in the default profile; registration
+  and forgot-password still return 200 and persist their token, so the integration test reads
+  the token straight from the repository instead of an actual mailbox.
 
 ## Order of work
 
