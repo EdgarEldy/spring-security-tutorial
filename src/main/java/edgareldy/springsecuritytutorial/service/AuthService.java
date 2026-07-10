@@ -4,6 +4,7 @@ import edgareldy.springsecuritytutorial.dto.auth.AuthResponse;
 import edgareldy.springsecuritytutorial.dto.auth.LoginRequest;
 import edgareldy.springsecuritytutorial.dto.auth.RegisterRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserResponse;
+import edgareldy.springsecuritytutorial.security.JwtService;
 
 /**
  * Contract orchestrating the full authentication flow: registration,
