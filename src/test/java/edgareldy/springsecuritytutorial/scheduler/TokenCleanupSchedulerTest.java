@@ -1,6 +1,7 @@
 package edgareldy.springsecuritytutorial.scheduler;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import edgareldy.springsecuritytutorial.repository.ActivationTokenRepository;
@@ -15,7 +16,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link TokenCleanupScheduler}, with every repository
- * mocked.
+ * mocked. Each purge method is verified independently, including that
+ * calling one does not touch the other repositories, since they now run
+ * as separate {@code @Scheduled}/{@code @Transactional} units rather than
+ * one method purging all three.
  * <p>
  * Created by edgar.muhamyangabo on 7/9/26
  * Author : edgar.muhamyangabo
@@ -38,11 +42,29 @@ class TokenCleanupSchedulerTest {
     private TokenCleanupScheduler tokenCleanupScheduler;
 
     @Test
-    void purgeExpiredTokensDelegatesToEveryRepository() {
-        tokenCleanupScheduler.purgeExpiredTokens();
+    void purgeExpiredActivationTokensOnlyTouchesActivationTokenRepository() {
+        tokenCleanupScheduler.purgeExpiredActivationTokens();
 
         verify(activationTokenRepository).deleteAllByExpiresAtBefore(any(Instant.class));
+        verify(passwordResetTokenRepository, never()).deleteAllByExpiryDateBefore(any());
+        verify(blacklistedTokenRepository, never()).deleteAllByExpiresAtBefore(any());
+    }
+
+    @Test
+    void purgeExpiredPasswordResetTokensOnlyTouchesPasswordResetTokenRepository() {
+        tokenCleanupScheduler.purgeExpiredPasswordResetTokens();
+
         verify(passwordResetTokenRepository).deleteAllByExpiryDateBefore(any(Instant.class));
+        verify(activationTokenRepository, never()).deleteAllByExpiresAtBefore(any());
+        verify(blacklistedTokenRepository, never()).deleteAllByExpiresAtBefore(any());
+    }
+
+    @Test
+    void purgeExpiredBlacklistedTokensOnlyTouchesBlacklistedTokenRepository() {
+        tokenCleanupScheduler.purgeExpiredBlacklistedTokens();
+
         verify(blacklistedTokenRepository).deleteAllByExpiresAtBefore(any(Instant.class));
+        verify(activationTokenRepository, never()).deleteAllByExpiresAtBefore(any());
+        verify(passwordResetTokenRepository, never()).deleteAllByExpiryDateBefore(any());
     }
 }
