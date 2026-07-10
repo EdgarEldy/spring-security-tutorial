@@ -4,6 +4,8 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+  mail:
+    host: ${MAIL_HOST:localhost}
 
 server:
   port: 8080
