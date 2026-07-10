@@ -477,7 +477,7 @@ This branch does not expose public endpoints: it provides the generation/validat
 ### Tasks
 
 - [x] `ActivationToken`, `PasswordResetToken`, `BlacklistedToken` entities
-- [x] Associated repositories (`findByToken`, `findByJti`, `findByUserIdAndValidatedAtIsNull`, etc.)
+- [x] Associated repositories (`findByToken`, `existsByJti`, `deleteAllByExpiresAtBefore`/`deleteAllByExpiryDateBefore` for the cleanup scheduler)
 - [x] `ActivationTokenService` interface + implementation: secure random token generation, expiration (e.g. 24h), validation, `validated_at` marking
 - [x] `PasswordResetTokenService` interface + implementation: generation, expiration (e.g. 1h), invalidation after use
 - [x] `BlacklistedTokenService` interface + implementation: adding a JWT to the blacklist on logout, presence check (`existsByJti`) used by `JwtAuthFilter`
