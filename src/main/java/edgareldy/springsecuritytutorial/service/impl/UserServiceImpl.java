@@ -121,6 +121,22 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(userRepository.save(user));
     }
 
+    @Override
+    @Transactional
+    public UserResponse enableAccount(Long id) {
+        User user = getUserOrThrow(id);
+        user.setEnabled(true);
+        return userMapper.toResponse(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public void updatePassword(Long id, String rawNewPassword) {
+        User user = getUserOrThrow(id);
+        user.setPassword(passwordEncoder.encode(rawNewPassword));
+        userRepository.save(user);
+    }
+
     private User getUserOrThrow(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
