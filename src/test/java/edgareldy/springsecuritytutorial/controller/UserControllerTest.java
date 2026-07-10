@@ -21,6 +21,9 @@ import edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import edgareldy.springsecuritytutorial.dto.user.UserResponse;
 import edgareldy.springsecuritytutorial.exception.BusinessRuleException;
 import edgareldy.springsecuritytutorial.exception.ResourceNotFoundException;
+import edgareldy.springsecuritytutorial.security.JwtService;
+import edgareldy.springsecuritytutorial.security.UserDetailsServiceImpl;
+import edgareldy.springsecuritytutorial.service.BlacklistedTokenService;
 import edgareldy.springsecuritytutorial.service.UserService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -38,7 +41,11 @@ import org.springframework.test.web.servlet.MockMvc;
  * {@link UserService} mocked. Servlet filters are disabled (no CSRF/default
  * auth noise), but {@link MethodSecurityConfig} is imported so
  * {@code @PreAuthorize} is genuinely enforced against the
- * {@code @WithMockUser} principal in each test.
+ * {@code @WithMockUser} principal in each test. {@code JwtService},
+ * {@code BlacklistedTokenService} and {@code UserDetailsServiceImpl} are
+ * mocked purely so the context loads, since {@code @WebMvcTest}
+ * auto-includes {@code JwtAuthFilter} as a {@code Filter} bean regardless
+ * of {@code addFilters}.
  * <p>
  * Created by edgar.muhamyangabo on 7/9/26
  * Author : edgar.muhamyangabo
@@ -58,6 +65,15 @@ class UserControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private BlacklistedTokenService blacklistedTokenService;
+
+    @MockitoBean
+    private UserDetailsServiceImpl userDetailsService;
 
     private static UserResponse owner() {
         return new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());

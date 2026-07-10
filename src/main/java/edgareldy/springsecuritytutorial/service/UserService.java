@@ -37,4 +37,8 @@ public interface UserService {
     UserResponse assignRole(Long userId, Long roleId);
 
     UserResponse removeRole(Long userId, Long roleId);
+
+    UserResponse enableAccount(Long id);
+
+    void updatePassword(Long id, String rawNewPassword);
 }

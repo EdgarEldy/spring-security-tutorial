@@ -312,4 +312,46 @@ class UserServiceImplTest {
         assertThatThrownBy(() -> userService.removeRole(1L, 99L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
+
+    @Test
+    void enableAccountEnablesUser() {
+        user.setEnabled(false);
+        UserResponse enabled = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toResponse(user)).thenReturn(enabled);
+
+        assertThat(userService.enableAccount(1L)).isEqualTo(enabled);
+
+        assertThat(user.isEnabled()).isTrue();
+    }
+
+    @Test
+    void enableAccountThrowsWhenMissing() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.enableAccount(99L))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void updatePasswordHashesAndSavesNewPassword() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("newPassword1")).thenReturn("new-hashed");
+        when(userRepository.save(user)).thenReturn(user);
+
+        userService.updatePassword(1L, "newPassword1");
+
+        assertThat(user.getPassword()).isEqualTo("new-hashed");
+    }
+
+    @Test
+    void updatePasswordThrowsWhenMissing() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.updatePassword(99L, "newPassword1"))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(passwordEncoder, never()).encode(any());
+    }
 }
