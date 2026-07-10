@@ -528,16 +528,58 @@ Final integration branch: full authentication, depends on `users`, `roles-permis
 
 ### Tasks
 
-- [ ] `JwtService` (`security/JwtService.java`): JWT generation (claims: `sub`, `jti`, `roles`, `permissions`, `iat`, `exp`), signature/expiration validation, claims extraction
-- [ ] `JwtAuthFilter` (`OncePerRequestFilter`): extracts the JWT from the `Authorization` header, checks it is not in `blacklisted_tokens` (via `BlacklistedTokenService`), populates the `SecurityContext`
-- [ ] `UserDetailsServiceImpl`: loads a `User` with its roles/permissions for Spring Security
-- [ ] `SecurityConfig` (`SecurityFilterChain`): BCrypt `PasswordEncoder`, `STATELESS` session, CSRF disabled, per-endpoint authorization rules, registration of `JwtAuthFilter`, `CustomPermissionEvaluator`, `CustomAuthenticationEntryPoint` (401), `CustomAccessDeniedHandler` (403)
-- [ ] `AuthService` interface + `AuthServiceImpl` implementation orchestrating `UserService`, `ActivationTokenService`, `PasswordResetTokenService`, `BlacklistedTokenService`, `EmailService`, `JwtService`
-- [ ] Business rule: refuse login if `enabled=false` (`DisabledException`) or `account_locked=true` (`LockedException`)
-- [ ] `AuthController`
-- [ ] OpenAPI documentation with a Bearer JWT security scheme
-- [ ] End-to-end integration tests: register → activate → login → access a protected resource → logout → token rejected after logout
-- [ ] Error case tests: unactivated account, locked account, expired token, already-used token, wrong credentials
+- [x] `JwtService` (`security/JwtService.java`): JWT generation (claims: `sub`, `jti`, `roles`, `permissions`, `iat`, `exp`), signature/expiration validation, claims extraction
+- [x] `JwtAuthFilter` (`OncePerRequestFilter`): extracts the JWT from the `Authorization` header, checks it is not in `blacklisted_tokens` (via `BlacklistedTokenService`), populates the `SecurityContext`
+- [x] `UserDetailsServiceImpl`: loads a `User` with its roles/permissions for Spring Security
+- [x] `SecurityConfig` (`SecurityFilterChain`): BCrypt `PasswordEncoder`, `STATELESS` session, CSRF disabled, per-endpoint authorization rules, registration of `JwtAuthFilter`, `CustomPermissionEvaluator`, `CustomAuthenticationEntryPoint` (401), `CustomAccessDeniedHandler` (403)
+- [x] `AuthService` interface + `AuthServiceImpl` implementation orchestrating `UserService`, `ActivationTokenService`, `PasswordResetTokenService`, `BlacklistedTokenService`, `EmailService`, `JwtService`
+- [x] Business rule: refuse login if `enabled=false` (`DisabledException`) or `account_locked=true` (`LockedException`)
+- [x] `AuthController`
+- [x] OpenAPI documentation with a Bearer JWT security scheme
+- [x] End-to-end integration tests: register → activate → login → access a protected resource → logout → token rejected after logout
+- [x] Error case tests: unactivated account, locked account, expired token, already-used token, wrong credentials
+
+### Configuration notes and deviations
+
+- **`AuthServiceImpl` injects `UserRepository` directly**, in addition to `UserService` and the
+  token/email services. `UserService` only ever returns DTOs, but `ActivationTokenService`,
+  `PasswordResetTokenService`, `BlacklistedTokenService` and `EmailService` all operate on the
+  real `User` entity (they need to persist a foreign key or read `getEmail()`/`getId()`
+  directly). A service reading its own repository is normal layered architecture, not a breach
+  of the contract/impl pattern; only controllers are restricted to service interfaces.
+- **No `ActivateAccountRequest` DTO.** `GET /api/auth/activate-account` takes the token as a
+  query parameter (`@RequestParam String token`), matching how the link emailed to the user
+  works (a clickable URL, not a JSON body), so there is nothing to bind into a record.
+- **`DaoAuthenticationProvider` already enforces the disabled/locked business rule with zero
+  extra code.** The auto-configured `AuthenticationManager` (built from the single
+  `UserDetailsServiceImpl` + `PasswordEncoder` beans) calls `UserDetails.isEnabled()` /
+  `isAccountNonLocked()` before checking the password, throwing `DisabledException` /
+  `LockedException`, both already mapped to 401 by `GlobalExceptionHandler` since
+  `feature/users`. The default `hideUserNotFoundExceptions=true` also converts an unknown
+  email into `BadCredentialsException`, avoiding user enumeration for free.
+- **`UserRepository.findByEmailIgnoreCase` gained `@EntityGraph(attributePaths =
+  {"roles", "roles.permissions"})`.** Both `UserDetailsServiceImpl` and `JwtAuthFilter` need
+  `User.getAuthorities()` to work after the Hibernate session used to load the user is closed
+  (the JWT filter runs outside any `@Transactional` boundary); without eagerly fetching
+  `roles`/`roles.permissions`, accessing them later throws `LazyInitializationException`.
+- **`@WebMvcTest` auto-includes `JwtAuthFilter` as a `Filter` bean regardless of
+  `@AutoConfigureMockMvc(addFilters = false)`.** That flag only skips *applying* filters to
+  requests; the bean still has to be constructed to load the context, so its own dependencies
+  (`JwtService`, `BlacklistedTokenService`, `UserDetailsServiceImpl`) need a `@MockitoBean` in
+  every `@WebMvcTest` slice from this branch onward, including the three controller test
+  classes from earlier branches (`UserControllerTest`, `RoleControllerTest`,
+  `PermissionControllerTest`), which broke once `SecurityConfig`/`JwtAuthFilter` were added.
+- **The end-to-end integration test (`AuthFlowIntegrationTest`) fetches the raw
+  activation/reset token by user id, not by email**, when reading it back from the repository
+  after registration. `ActivationToken.user`/`PasswordResetToken.user` are lazy
+  `@ManyToOne` associations; comparing `token.getUser().getId()` against an id already read
+  inside a transaction is safe, but calling `token.getUser().getEmail()` outside any active
+  Hibernate session throws `LazyInitializationException`.
+- **No SMTP server is required for the test suite to pass.** `EmailServiceImpl` runs
+  `@Async`, and the `AsyncUncaughtExceptionHandler` added in `feature/tokens` swallows (and
+  logs) the connection failure against `localhost:25` in the default profile; registration
+  and forgot-password still return 200 and persist their token, so the integration test reads
+  the token straight from the repository instead of an actual mailbox.
 
 ## Order of work
 
