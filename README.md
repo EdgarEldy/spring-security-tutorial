@@ -476,14 +476,39 @@ This branch does not expose public endpoints: it provides the generation/validat
 
 ### Tasks
 
-- [ ] `ActivationToken`, `PasswordResetToken`, `BlacklistedToken` entities
-- [ ] Associated repositories (`findByToken`, `findByJti`, `findByUserIdAndValidatedAtIsNull`, etc.)
-- [ ] `ActivationTokenService` interface + implementation: secure random token generation, expiration (e.g. 24h), validation, `validated_at` marking
-- [ ] `PasswordResetTokenService` interface + implementation: generation, expiration (e.g. 1h), invalidation after use
-- [ ] `BlacklistedTokenService` interface + implementation: adding a JWT to the blacklist on logout, presence check (`existsByJti`) used by `JwtAuthFilter`
-- [ ] `EmailService` interface + `EmailServiceImpl` implementation (`spring-boot-starter-mail`), `sendActivationEmail`, `sendPasswordResetEmail` methods, executed asynchronously (`@Async`)
-- [ ] `TokenCleanupScheduler` (`scheduler/TokenCleanupScheduler.java`): `@Scheduled(cron = "...")` job that purges expired tokens daily (activation, reset, blacklist)
-- [ ] Unit tests (token generation, expiration, validation) and scheduler tests
+- [x] `ActivationToken`, `PasswordResetToken`, `BlacklistedToken` entities
+- [x] Associated repositories (`findByToken`, `findByJti`, `findByUserIdAndValidatedAtIsNull`, etc.)
+- [x] `ActivationTokenService` interface + implementation: secure random token generation, expiration (e.g. 24h), validation, `validated_at` marking
+- [x] `PasswordResetTokenService` interface + implementation: generation, expiration (e.g. 1h), invalidation after use
+- [x] `BlacklistedTokenService` interface + implementation: adding a JWT to the blacklist on logout, presence check (`existsByJti`) used by `JwtAuthFilter`
+- [x] `EmailService` interface + `EmailServiceImpl` implementation (`spring-boot-starter-mail`), `sendActivationEmail`, `sendPasswordResetEmail` methods, executed asynchronously (`@Async`)
+- [x] `TokenCleanupScheduler` (`scheduler/TokenCleanupScheduler.java`): `@Scheduled(cron = "...")` job that purges expired tokens daily (activation, reset, blacklist)
+- [x] Unit tests (token generation, expiration, validation) and scheduler tests
+
+### Configuration notes and deviations
+
+- **`security/SecureTokenGenerator`** centralizes the `SecureRandom`-based token generation
+  (32 random bytes, URL-safe Base64, no padding) shared by `ActivationTokenService` and
+  `PasswordResetTokenService`, rather than duplicating a `SecureRandom` instance in each.
+- **`PasswordResetTokenServiceImpl.validateAndConsume` deletes the token row on lookup**,
+  before checking expiry, so a token is single-use even on an expired attempt: it can never be
+  replayed once looked up, valid or not.
+- **`ActivationTokenServiceImpl.validate` keeps the row and sets `validated_at`** instead of
+  deleting it, unlike password reset: an activation token's history (when an account was
+  activated) is worth keeping, whereas a password reset token has no value once consumed.
+- **`app.base-url` property** (env override `APP_BASE_URL`, default
+  `http://localhost:8080`) backs the activation/reset links `EmailServiceImpl` builds, so a
+  real deployment only needs an environment variable, not a code change.
+- **`spring.mail.host` now has a default (`localhost`) in the shared `application.yml`.**
+  Spring Boot only auto-configures a `JavaMailSender` bean when `spring.mail.host` is set;
+  without a default, the plain default profile (used by
+  `SpringSecurityTutorialApplicationTests`, no profile active) failed to start once
+  `EmailServiceImpl` required that bean. `application-dev.yml` (MailHog) and
+  `application-prod.yml` (real SMTP host) still override it per profile.
+- **No controller in this branch.** `ActivationTokenService`, `PasswordResetTokenService`,
+  `BlacklistedTokenService`, and `EmailService` are consumed directly by `feature/auth`'s
+  `AuthServiceImpl`, not exposed as DTOs/endpoints, per the README's description of this
+  branch.
 
 ## feature/auth
 
