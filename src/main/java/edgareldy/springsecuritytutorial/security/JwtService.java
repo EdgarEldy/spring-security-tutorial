@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -31,10 +30,15 @@ public class JwtService {
 
     private final SecretKey key;
     private final long expirationMs;
+    private final SecureTokenGenerator secureTokenGenerator;
 
-    public JwtService(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration-ms}") long expirationMs) {
+    public JwtService(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration-ms}") long expirationMs,
+            SecureTokenGenerator secureTokenGenerator) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
+        this.secureTokenGenerator = secureTokenGenerator;
     }
 
     public String generateToken(User user) {
@@ -49,7 +53,7 @@ public class JwtService {
                 .toList();
         return Jwts.builder()
                 .subject(user.getEmail())
-                .id(UUID.randomUUID().toString())
+                .id(secureTokenGenerator.generate())
                 .claim("roles", roles)
                 .claim("permissions", permissions)
                 .issuedAt(Date.from(now))

@@ -31,7 +31,7 @@ class JwtServiceTest {
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService(SECRET, 3_600_000L);
+        jwtService = new JwtService(SECRET, 3_600_000L, new SecureTokenGenerator());
     }
 
     @Test
