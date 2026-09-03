@@ -157,7 +157,7 @@ Each feature is developed on its own branch, then merged into `develop` via a do
 spring-security-tutorial/
 ├── src/
 │   ├── main/
-│   │   ├── java/edgareldy/springsecuritytutorial/
+│   │   ├── java/com/edgareldy/springsecuritytutorial/
 │   │   │   ├── SpringSecurityTutorialApplication.java
 │   │   │   ├── config/
 │   │   │   │   ├── OpenApiConfig.java
@@ -220,7 +220,6 @@ spring-security-tutorial/
 │   │   │   │   ├── ResourceNotFoundException.java
 │   │   │   │   ├── BusinessRuleException.java
 │   │   │   │   ├── InvalidTokenException.java
-│   │   │   │   ├── ErrorResponse.java
 │   │   │   │   └── GlobalExceptionHandler.java
 │   │   │   ├── security/
 │   │   │   │   ├── JwtService.java
@@ -242,7 +241,7 @@ spring-security-tutorial/
 │   │       └── db/migration/
 │   │           └── V1__init_schema.sql
 │   └── test/
-│       └── java/edgareldy/springsecuritytutorial/
+│       └── java/com/edgareldy/springsecuritytutorial/
 │           ├── controller/ (MockMvc + spring-security-test tests)
 │           ├── service/ (Mockito unit tests)
 │           ├── security/ (JWT filter and PermissionEvaluator tests)
@@ -301,7 +300,7 @@ Technical foundation shared by the whole project, to be merged first into `devel
 - [x] `application-prod.yml`: datasource and JWT secrets via environment variables
 - [x] Flyway script `V1__init_schema.sql` (users, roles, permissions, role_user, role_permission, activation_tokens, blacklisted_tokens, password_reset_tokens tables)
 - [x] `GlobalExceptionHandler` (`@RestControllerAdvice`): `ResourceNotFoundException` (404), `MethodArgumentNotValidException` (400), `BusinessRuleException` (422), `InvalidTokenException` (400), `BadCredentialsException`/`LockedException`/`DisabledException` (401), generic `Exception` (500)
-- [x] Standard `ErrorResponse` DTO: `timestamp`, `status`, `error`, `message`, `path`, `fieldErrors`
+- [x] Errors returned as `org.springframework.http.ProblemDetail` (RFC 7807), wrapped in `ApiResponse<T>`: `status`, `title`, `detail`, `instance`, plus a `fieldErrors` property on validation failures
 - [x] Generic `ApiResponse<T>` and `PageResponse<T>` DTOs (`dto/common/`)
 - [x] `LoggingAspect` and `ExecutionTimeAspect` (`aspect/`)
 - [x] `OpenApiConfig`: "Authorize" button (Bearer JWT) in Swagger UI
@@ -550,7 +549,7 @@ Final integration branch: full authentication, depends on `users`, `roles-permis
 
 ## Code conventions
 
-- Root package: `edgareldy.springsecuritytutorial`
+- Root package: `com.edgareldy.springsecuritytutorial`
 - DTOs: Java `record` rather than classes (immutability, less boilerplate)
 - No business logic in controllers: delegate to the service layer only
 - **Contract/implementation services**: the interface (`XxxService`) lives at the root of `service/`, its implementation (`XxxServiceImpl`) lives in `service/impl/`. Controllers and tests only depend on the interface.
