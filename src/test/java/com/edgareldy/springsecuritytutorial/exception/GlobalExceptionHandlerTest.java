@@ -13,6 +13,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
@@ -48,6 +49,7 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody().data().getInstance()).isEqualTo(URI.create("/api/users/99"));
         assertThat(response.getBody().data().getStatus()).isEqualTo(404);
         assertThat(response.getBody().data().getDetail()).isEqualTo("User not found");
+        assertThat(response.getBody().data().getTitle()).isEqualTo(HttpStatus.NOT_FOUND.getReasonPhrase());
     }
 
     @Test
@@ -59,6 +61,8 @@ class GlobalExceptionHandlerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
         assertThat(response.getBody().data().getStatus()).isEqualTo(422);
+        assertThat(response.getBody().data().getTitle()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase());
+        assertThat(response.getBody().data().getInstance()).isEqualTo(URI.create("/api/users/1/lock"));
     }
 
     @Test
@@ -71,6 +75,21 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().data().getStatus()).isEqualTo(400);
         assertThat(response.getBody().data().getDetail()).isEqualTo("Activation token has expired");
+        assertThat(response.getBody().data().getTitle()).isEqualTo(HttpStatus.BAD_REQUEST.getReasonPhrase());
+    }
+
+    @Test
+    void accessDeniedMapsTo403() {
+        HttpServletRequest request = mockRequest("/api/users/1");
+
+        ResponseEntity<ApiResponse<ProblemDetail>> response =
+                handler.handleAccessDenied(new AccessDeniedException("Access is denied"), request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getBody().message()).isEqualTo("Access denied");
+        assertThat(response.getBody().data().getStatus()).isEqualTo(403);
+        assertThat(response.getBody().data().getTitle()).isEqualTo(HttpStatus.FORBIDDEN.getReasonPhrase());
+        assertThat(response.getBody().data().getInstance()).isEqualTo(URI.create("/api/users/1"));
     }
 
     @Test
@@ -83,6 +102,7 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody().message()).isEqualTo("Invalid email or password");
         assertThat(response.getBody().data().getStatus()).isEqualTo(401);
+        assertThat(response.getBody().data().getTitle()).isEqualTo(HttpStatus.UNAUTHORIZED.getReasonPhrase());
     }
 
     @Test
@@ -95,6 +115,7 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody().message()).isEqualTo("Account is locked");
         assertThat(response.getBody().data().getStatus()).isEqualTo(401);
+        assertThat(response.getBody().data().getTitle()).isEqualTo(HttpStatus.UNAUTHORIZED.getReasonPhrase());
     }
 
     @Test
@@ -107,6 +128,7 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody().message()).isEqualTo("Account is not activated");
         assertThat(response.getBody().data().getStatus()).isEqualTo(401);
+        assertThat(response.getBody().data().getTitle()).isEqualTo(HttpStatus.UNAUTHORIZED.getReasonPhrase());
     }
 
     @Test
@@ -120,6 +142,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiResponse<ProblemDetail>> response = handler.handleValidation(ex, request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().data().getTitle()).isEqualTo(HttpStatus.BAD_REQUEST.getReasonPhrase());
         @SuppressWarnings("unchecked")
         Map<String, String> fieldErrors =
                 (Map<String, String>) response.getBody().data().getProperties().get("fieldErrors");
@@ -135,6 +158,7 @@ class GlobalExceptionHandlerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody().data().getStatus()).isEqualTo(500);
+        assertThat(response.getBody().data().getTitle()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
     }
 
     private HttpServletRequest mockRequest(String uri) {
