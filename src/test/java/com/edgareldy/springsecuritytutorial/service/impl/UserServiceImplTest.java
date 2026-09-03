@@ -3,11 +3,13 @@ package com.edgareldy.springsecuritytutorial.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.edgareldy.springsecuritytutorial.dto.common.PageResponse;
+import com.edgareldy.springsecuritytutorial.dto.role.RoleResponse;
 import com.edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import com.edgareldy.springsecuritytutorial.dto.user.UserRequest;
 import com.edgareldy.springsecuritytutorial.dto.user.UserResponse;
@@ -15,6 +17,7 @@ import com.edgareldy.springsecuritytutorial.entity.Role;
 import com.edgareldy.springsecuritytutorial.entity.User;
 import com.edgareldy.springsecuritytutorial.exception.BusinessRuleException;
 import com.edgareldy.springsecuritytutorial.exception.ResourceNotFoundException;
+import com.edgareldy.springsecuritytutorial.mapper.RoleMapper;
 import com.edgareldy.springsecuritytutorial.mapper.UserMapper;
 import com.edgareldy.springsecuritytutorial.repository.RoleRepository;
 import com.edgareldy.springsecuritytutorial.repository.UserRepository;
@@ -52,6 +55,9 @@ class UserServiceImplTest {
 
     @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private RoleMapper roleMapper;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -229,7 +235,8 @@ class UserServiceImplTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(userRepository.save(user)).thenReturn(user);
-        when(userMapper.toResponse(user)).thenReturn(userResponse);
+        when(roleMapper.toResponse(role)).thenReturn(new RoleResponse(1L, "ADMIN", List.of()));
+        when(userMapper.toDetailResponse(eq(user), any())).thenReturn(userResponse);
 
         userService.assignRole(1L, 1L);
 
@@ -275,7 +282,7 @@ class UserServiceImplTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(userRepository.save(user)).thenReturn(user);
-        when(userMapper.toResponse(user)).thenReturn(userResponse);
+        when(userMapper.toDetailResponse(eq(user), any())).thenReturn(userResponse);
 
         userService.removeRole(1L, 1L);
 

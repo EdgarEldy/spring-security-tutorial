@@ -1,6 +1,7 @@
 package com.edgareldy.springsecuritytutorial.service.impl;
 
 import com.edgareldy.springsecuritytutorial.dto.common.PageResponse;
+import com.edgareldy.springsecuritytutorial.dto.role.RoleResponse;
 import com.edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import com.edgareldy.springsecuritytutorial.dto.user.UserRequest;
 import com.edgareldy.springsecuritytutorial.dto.user.UserResponse;
@@ -8,10 +9,13 @@ import com.edgareldy.springsecuritytutorial.entity.Role;
 import com.edgareldy.springsecuritytutorial.entity.User;
 import com.edgareldy.springsecuritytutorial.exception.BusinessRuleException;
 import com.edgareldy.springsecuritytutorial.exception.ResourceNotFoundException;
+import com.edgareldy.springsecuritytutorial.mapper.RoleMapper;
 import com.edgareldy.springsecuritytutorial.mapper.UserMapper;
 import com.edgareldy.springsecuritytutorial.repository.RoleRepository;
 import com.edgareldy.springsecuritytutorial.repository.UserRepository;
 import com.edgareldy.springsecuritytutorial.service.UserService;
+import java.util.Comparator;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,6 +38,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
+    private final RoleMapper roleMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -43,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse findById(Long id) {
-        return userMapper.toResponse(getUserOrThrow(id));
+        return toDetailResponse(getUserOrThrow(id));
     }
 
     @Override
@@ -107,7 +112,7 @@ public class UserServiceImpl implements UserService {
         if (!user.getRoles().add(role)) {
             throw new BusinessRuleException("Role " + roleId + " is already assigned to user " + userId);
         }
-        return userMapper.toResponse(userRepository.save(user));
+        return toDetailResponse(userRepository.save(user));
     }
 
     @Override
@@ -118,7 +123,7 @@ public class UserServiceImpl implements UserService {
         if (!user.getRoles().remove(role)) {
             throw new BusinessRuleException("Role " + roleId + " is not assigned to user " + userId);
         }
-        return userMapper.toResponse(userRepository.save(user));
+        return toDetailResponse(userRepository.save(user));
     }
 
     private User getUserOrThrow(Long id) {
@@ -129,5 +134,13 @@ public class UserServiceImpl implements UserService {
     private Role getRoleOrThrow(Long id) {
         return roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found with id " + id));
+    }
+
+    private UserResponse toDetailResponse(User user) {
+        List<RoleResponse> roles = user.getRoles().stream()
+                .map(roleMapper::toResponse)
+                .sorted(Comparator.comparing(RoleResponse::roleName))
+                .toList();
+        return userMapper.toDetailResponse(user, roles);
     }
 }

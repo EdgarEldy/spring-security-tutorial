@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.edgareldy.springsecuritytutorial.config.MethodSecurityConfig;
 import com.edgareldy.springsecuritytutorial.security.CustomPermissionEvaluator;
 import com.edgareldy.springsecuritytutorial.dto.common.PageResponse;
+import com.edgareldy.springsecuritytutorial.dto.role.RoleResponse;
 import com.edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import com.edgareldy.springsecuritytutorial.dto.user.UserResponse;
 import com.edgareldy.springsecuritytutorial.exception.BusinessRuleException;
@@ -241,12 +242,14 @@ class UserControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void assignRoleReturns200ForAdmin() throws Exception {
-        UserResponse withRole = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of("ADMIN"));
+        RoleResponse adminRole = new RoleResponse(2L, "ADMIN", List.of());
+        UserResponse withRole =
+                new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of(adminRole));
         when(userService.assignRole(1L, 2L)).thenReturn(withRole);
 
         mockMvc.perform(post("/api/users/1/roles/2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.roles[0]").value("ADMIN"));
+                .andExpect(jsonPath("$.data.roles[0].role_name").value("ADMIN"));
     }
 
     @Test
