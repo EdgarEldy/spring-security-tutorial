@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.edgareldy.springsecuritytutorial.config.MethodSecurityConfig;
 import com.edgareldy.springsecuritytutorial.security.CustomPermissionEvaluator;
 import com.edgareldy.springsecuritytutorial.dto.common.PageResponse;
+import com.edgareldy.springsecuritytutorial.dto.permission.PermissionResponse;
 import com.edgareldy.springsecuritytutorial.dto.role.RoleResponse;
 import com.edgareldy.springsecuritytutorial.dto.user.UpdateProfileRequest;
 import com.edgareldy.springsecuritytutorial.dto.user.UserResponse;
@@ -97,6 +98,22 @@ class UserControllerTest {
         mockMvc.perform(get("/api/users/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.email").value("ada@example.com"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void findByIdReturns200WithNestedRolesAndPermissions() throws Exception {
+        PermissionResponse readUsers = new PermissionResponse(1L, "USER", "READ");
+        RoleResponse adminRole = new RoleResponse(1L, "ADMIN", List.of(readUsers));
+        UserResponse withRole =
+                new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of(adminRole));
+        when(userService.findById(1L)).thenReturn(withRole);
+
+        mockMvc.perform(get("/api/users/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.roles[0].role_name").value("ADMIN"))
+                .andExpect(jsonPath("$.data.roles[0].permissions[0].resource").value("USER"))
+                .andExpect(jsonPath("$.data.roles[0].permissions[0].action").value("READ"));
     }
 
     @Test

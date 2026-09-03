@@ -96,6 +96,21 @@ class UserServiceImplTest {
     }
 
     @Test
+    void findByIdReturnsDetailResponseWithRoles() {
+        Role role = Role.builder().id(1L).roleName("ADMIN").build();
+        user.getRoles().add(role);
+        RoleResponse roleResponse = new RoleResponse(1L, "ADMIN", List.of());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(roleMapper.toResponse(role)).thenReturn(roleResponse);
+        when(userMapper.toDetailResponse(user, List.of(roleResponse))).thenReturn(userResponse);
+
+        UserResponse result = userService.findById(1L);
+
+        assertThat(result).isEqualTo(userResponse);
+        verify(userMapper, never()).toResponse(any());
+    }
+
+    @Test
     void findByEmailReturnsResponse() {
         when(userRepository.findByEmailIgnoreCase("ada@example.com")).thenReturn(Optional.of(user));
         when(userMapper.toResponse(user)).thenReturn(userResponse);
