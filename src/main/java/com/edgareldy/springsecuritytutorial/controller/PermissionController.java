@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -39,21 +39,22 @@ public class PermissionController {
 
     @GetMapping
     @Operation(summary = "List permissions")
-    public ApiResponse<List<PermissionResponse>> findAll() {
-        return ApiResponse.success(permissionService.findAll(), "Permissions retrieved successfully");
+    public ResponseEntity<ApiResponse<List<PermissionResponse>>> findAll() {
+        return ResponseEntity.ok(
+                ApiResponse.success(permissionService.findAll(), "Permissions retrieved successfully"));
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a permission")
-    public ApiResponse<PermissionResponse> create(@Valid @RequestBody PermissionRequest request) {
-        return ApiResponse.success(permissionService.create(request), "Permission created successfully");
+    public ResponseEntity<ApiResponse<PermissionResponse>> create(@Valid @RequestBody PermissionRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(permissionService.create(request), "Permission created successfully"));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a permission")
-    public ApiResponse<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         permissionService.delete(id);
-        return ApiResponse.success(null, "Permission deleted successfully");
+        return ResponseEntity.ok(ApiResponse.success(null, "Permission deleted successfully"));
     }
 }

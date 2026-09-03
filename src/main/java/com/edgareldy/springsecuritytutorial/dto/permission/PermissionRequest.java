@@ -12,10 +12,10 @@ import jakarta.validation.constraints.NotBlank;
  */
 public record PermissionRequest(
 
-        @NotBlank(message = "resource must not be blank")
+        @NotBlank(message = "Resource must not be blank")
         String resource,
 
-        @NotBlank(message = "action must not be blank")
+        @NotBlank(message = "Action must not be blank")
         String action
 ) {
 

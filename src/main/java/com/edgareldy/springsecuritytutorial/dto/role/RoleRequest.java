@@ -1,5 +1,6 @@
 package com.edgareldy.springsecuritytutorial.dto.role;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 
 /**
@@ -15,7 +16,8 @@ import jakarta.validation.constraints.NotBlank;
  */
 public record RoleRequest(
 
-        @NotBlank(message = "roleName must not be blank")
+        @JsonProperty("role_name")
+        @NotBlank(message = "Role name must not be blank")
         String roleName
 ) {
 

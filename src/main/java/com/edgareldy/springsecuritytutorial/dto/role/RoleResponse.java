@@ -1,6 +1,7 @@
 package com.edgareldy.springsecuritytutorial.dto.role;
 
 import com.edgareldy.springsecuritytutorial.dto.permission.PermissionResponse;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public record RoleResponse(
         Long id,
-        String roleName,
+        @JsonProperty("role_name") String roleName,
         List<PermissionResponse> permissions
 ) {
 }

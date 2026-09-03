@@ -66,7 +66,7 @@ class RoleControllerTest {
 
         mockMvc.perform(get("/api/roles"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].roleName").value("ADMIN"));
+                .andExpect(jsonPath("$.data[0].role_name").value("ADMIN"));
     }
 
     @Test
@@ -86,7 +86,7 @@ class RoleControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.roleName").value("ADMIN"));
+                .andExpect(jsonPath("$.data.role_name").value("ADMIN"));
     }
 
     @Test
@@ -111,7 +111,7 @@ class RoleControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.roleName").value("MODERATOR"));
+                .andExpect(jsonPath("$.data.role_name").value("MODERATOR"));
     }
 
     @Test

@@ -104,15 +104,19 @@ public class UserController {
     @PostMapping("/{userId}/roles/{roleId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Assign a role to a user")
-    public ApiResponse<UserResponse> assignRole(@PathVariable Long userId, @PathVariable Long roleId) {
-        return ApiResponse.success(userService.assignRole(userId, roleId), "Role assigned successfully");
+    public ResponseEntity<ApiResponse<UserResponse>> assignRole(
+            @PathVariable Long userId, @PathVariable Long roleId) {
+        return ResponseEntity.ok(
+                ApiResponse.success(userService.assignRole(userId, roleId), "Role assigned successfully"));
     }
 
     @DeleteMapping("/{userId}/roles/{roleId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Remove a role from a user")
-    public ApiResponse<UserResponse> removeRole(@PathVariable Long userId, @PathVariable Long roleId) {
-        return ApiResponse.success(userService.removeRole(userId, roleId), "Role removed successfully");
+    public ResponseEntity<ApiResponse<UserResponse>> removeRole(
+            @PathVariable Long userId, @PathVariable Long roleId) {
+        return ResponseEntity.ok(
+                ApiResponse.success(userService.removeRole(userId, roleId), "Role removed successfully"));
     }
 
     private void assertAdminOrOwner(Long id) {
