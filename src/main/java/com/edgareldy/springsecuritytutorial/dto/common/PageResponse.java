@@ -1,5 +1,6 @@
 package com.edgareldy.springsecuritytutorial.dto.common;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
@@ -16,8 +17,8 @@ public record PageResponse<T>(
         List<T> content,
         int page,
         int size,
-        long totalElements,
-        int totalPages
+        @JsonProperty("total_elements") long totalElements,
+        @JsonProperty("total_pages") int totalPages
 ) {
 
     public static <T> PageResponse<T> from(Page<T> page) {
