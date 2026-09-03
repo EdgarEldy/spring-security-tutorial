@@ -198,4 +198,31 @@ class RoleControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void removePermissionReturns403ForNonAdmin() throws Exception {
+        mockMvc.perform(delete("/api/roles/1/permissions/2"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void removePermissionReturns422WhenNotAssigned() throws Exception {
+        when(roleService.removePermission(1L, 2L))
+                .thenThrow(new BusinessRuleException("Permission 2 is not assigned to role 1"));
+
+        mockMvc.perform(delete("/api/roles/1/permissions/2"))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void removePermissionReturns404WhenPermissionMissing() throws Exception {
+        when(roleService.removePermission(1L, 99L))
+                .thenThrow(new ResourceNotFoundException("Permission not found with id 99"));
+
+        mockMvc.perform(delete("/api/roles/1/permissions/99"))
+                .andExpect(status().isNotFound());
+    }
 }
