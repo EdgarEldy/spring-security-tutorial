@@ -157,7 +157,7 @@ Each feature is developed on its own branch, then merged into `develop` via a do
 spring-security-tutorial/
 ├── src/
 │   ├── main/
-│   │   ├── java/edgareldy/springsecuritytutorial/
+│   │   ├── java/com/edgareldy/springsecuritytutorial/
 │   │   │   ├── SpringSecurityTutorialApplication.java
 │   │   │   ├── config/
 │   │   │   │   ├── OpenApiConfig.java
@@ -242,7 +242,7 @@ spring-security-tutorial/
 │   │       └── db/migration/
 │   │           └── V1__init_schema.sql
 │   └── test/
-│       └── java/edgareldy/springsecuritytutorial/
+│       └── java/com/edgareldy/springsecuritytutorial/
 │           ├── controller/ (MockMvc + spring-security-test tests)
 │           ├── service/ (Mockito unit tests)
 │           ├── security/ (JWT filter and PermissionEvaluator tests)
@@ -483,7 +483,7 @@ Final integration branch: full authentication, depends on `users`, `roles-permis
 
 ## Code conventions
 
-- Root package: `edgareldy.springsecuritytutorial`
+- Root package: `com.edgareldy.springsecuritytutorial`
 - DTOs: Java `record` rather than classes (immutability, less boilerplate)
 - No business logic in controllers: delegate to the service layer only
 - **Contract/implementation services**: the interface (`XxxService`) lives at the root of `service/`, its implementation (`XxxServiceImpl`) lives in `service/impl/`. Controllers and tests only depend on the interface.
