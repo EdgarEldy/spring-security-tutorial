@@ -220,7 +220,6 @@ spring-security-tutorial/
 │   │   │   │   ├── ResourceNotFoundException.java
 │   │   │   │   ├── BusinessRuleException.java
 │   │   │   │   ├── InvalidTokenException.java
-│   │   │   │   ├── ErrorResponse.java
 │   │   │   │   └── GlobalExceptionHandler.java
 │   │   │   ├── security/
 │   │   │   │   ├── JwtService.java
@@ -301,7 +300,7 @@ Technical foundation shared by the whole project, to be merged first into `devel
 - [x] `application-prod.yml`: datasource and JWT secrets via environment variables
 - [x] Flyway script `V1__init_schema.sql` (users, roles, permissions, role_user, role_permission, activation_tokens, blacklisted_tokens, password_reset_tokens tables)
 - [x] `GlobalExceptionHandler` (`@RestControllerAdvice`): `ResourceNotFoundException` (404), `MethodArgumentNotValidException` (400), `BusinessRuleException` (422), `InvalidTokenException` (400), `BadCredentialsException`/`LockedException`/`DisabledException` (401), generic `Exception` (500)
-- [x] Standard `ErrorResponse` DTO: `timestamp`, `status`, `error`, `message`, `path`, `fieldErrors`
+- [x] Errors returned as `org.springframework.http.ProblemDetail` (RFC 7807), wrapped in `ApiResponse<T>`: `status`, `title`, `detail`, `instance`, plus a `fieldErrors` property on validation failures
 - [x] Generic `ApiResponse<T>` and `PageResponse<T>` DTOs (`dto/common/`)
 - [x] `LoggingAspect` and `ExecutionTimeAspect` (`aspect/`)
 - [x] `OpenApiConfig`: "Authorize" button (Bearer JWT) in Swagger UI
