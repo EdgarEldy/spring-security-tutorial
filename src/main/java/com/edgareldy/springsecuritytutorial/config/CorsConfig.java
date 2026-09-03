@@ -1,4 +1,4 @@
-package edgareldy.springsecuritytutorial.config;
+package com.edgareldy.springsecuritytutorial.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

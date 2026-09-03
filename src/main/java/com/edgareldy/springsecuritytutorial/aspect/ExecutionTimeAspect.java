@@ -1,4 +1,4 @@
-package edgareldy.springsecuritytutorial.aspect;
+package com.edgareldy.springsecuritytutorial.aspect;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -23,7 +23,7 @@ public class ExecutionTimeAspect {
 
     private static final Logger log = LoggerFactory.getLogger(ExecutionTimeAspect.class);
 
-    @Around("execution(* edgareldy.springsecuritytutorial.controller..*(..))")
+    @Around("execution(* com.edgareldy.springsecuritytutorial.controller..*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         long start = System.currentTimeMillis();
         try {

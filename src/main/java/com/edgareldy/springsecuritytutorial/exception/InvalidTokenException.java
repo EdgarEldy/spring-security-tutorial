@@ -1,4 +1,4 @@
-package edgareldy.springsecuritytutorial.exception;
+package com.edgareldy.springsecuritytutorial.exception;
 
 /**
  * Thrown when an activation, password reset, or JWT token is missing,

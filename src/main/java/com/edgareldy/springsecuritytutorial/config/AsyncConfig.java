@@ -1,4 +1,4 @@
-package edgareldy.springsecuritytutorial.config;
+package com.edgareldy.springsecuritytutorial.config;
 
 import java.util.concurrent.Executor;
 import org.springframework.context.annotation.Bean;

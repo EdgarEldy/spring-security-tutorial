@@ -1,4 +1,4 @@
-package edgareldy.springsecuritytutorial.exception;
+package com.edgareldy.springsecuritytutorial.exception;
 
 import java.time.Instant;
 import java.util.List;

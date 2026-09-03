@@ -1,4 +1,4 @@
-package edgareldy.springsecuritytutorial;
+package com.edgareldy.springsecuritytutorial;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

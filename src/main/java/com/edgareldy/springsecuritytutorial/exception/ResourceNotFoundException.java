@@ -1,4 +1,4 @@
-package edgareldy.springsecuritytutorial.exception;
+package com.edgareldy.springsecuritytutorial.exception;
 
 /**
  * Thrown by service implementations when a requested entity does not exist

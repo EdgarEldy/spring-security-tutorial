@@ -1,4 +1,4 @@
-package edgareldy.springsecuritytutorial.dto.common;
+package com.edgareldy.springsecuritytutorial.dto.common;
 
 import java.time.Instant;
 

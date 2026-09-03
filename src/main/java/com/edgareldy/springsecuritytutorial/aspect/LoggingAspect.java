@@ -1,4 +1,4 @@
-package edgareldy.springsecuritytutorial.aspect;
+package com.edgareldy.springsecuritytutorial.aspect;
 
 import java.lang.reflect.RecordComponent;
 import java.util.Arrays;
@@ -29,7 +29,7 @@ public class LoggingAspect {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingAspect.class);
 
-    @Around("execution(* edgareldy.springsecuritytutorial.service..*(..))")
+    @Around("execution(* com.edgareldy.springsecuritytutorial.service..*(..))")
     public Object logServiceCall(ProceedingJoinPoint joinPoint) throws Throwable {
         String signature = joinPoint.getSignature().toShortString();
         String arguments = Arrays.stream(joinPoint.getArgs())

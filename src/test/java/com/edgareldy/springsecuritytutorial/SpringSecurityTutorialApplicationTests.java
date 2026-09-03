@@ -1,4 +1,4 @@
-package edgareldy.springsecuritytutorial;
+package com.edgareldy.springsecuritytutorial;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

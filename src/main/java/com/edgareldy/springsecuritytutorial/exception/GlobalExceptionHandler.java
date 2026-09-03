@@ -1,6 +1,6 @@
-package edgareldy.springsecuritytutorial.exception;
+package com.edgareldy.springsecuritytutorial.exception;
 
-import edgareldy.springsecuritytutorial.dto.common.ApiResponse;
+import com.edgareldy.springsecuritytutorial.dto.common.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.List;
