@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,52 +44,52 @@ public class AuthController {
     @PostMapping("/register")
     @SecurityRequirements
     @Operation(summary = "Register a new account")
-    public ApiResponse<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ApiResponse.success(authService.register(request), "Account registered successfully");
+    public ResponseEntity<ApiResponse<UserResponse>> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(authService.register(request), "Account registered successfully"));
     }
 
     @GetMapping("/activate-account")
     @SecurityRequirements
     @Operation(summary = "Activate an account using the token emailed at registration")
-    public ApiResponse<Void> activateAccount(@RequestParam String token) {
+    public ResponseEntity<ApiResponse<Void>> activateAccount(@RequestParam String token) {
         authService.activateAccount(token);
-        return ApiResponse.success(null, "Account activated successfully");
+        return ResponseEntity.ok(ApiResponse.success(null, "Account activated successfully"));
     }
 
     @PostMapping("/login")
     @SecurityRequirements
     @Operation(summary = "Authenticate and obtain a JWT")
-    public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ApiResponse.success(authService.login(request), "Login successful");
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(authService.login(request), "Login successful"));
     }
 
     @PostMapping("/logout")
     @Operation(summary = "Blacklist the current JWT")
-    public ApiResponse<Void> logout(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
         authService.logout(extractToken(request));
-        return ApiResponse.success(null, "Logout successful");
+        return ResponseEntity.ok(ApiResponse.success(null, "Logout successful"));
     }
 
     @GetMapping("/me")
     @Operation(summary = "Get the authenticated user's profile")
-    public ApiResponse<UserResponse> me() {
-        return ApiResponse.success(authService.me(), "Current user retrieved successfully");
+    public ResponseEntity<ApiResponse<UserResponse>> me() {
+        return ResponseEntity.ok(ApiResponse.success(authService.me(), "Current user retrieved successfully"));
     }
 
     @PostMapping("/forgot-password")
     @SecurityRequirements
     @Operation(summary = "Request a password reset email")
-    public ApiResponse<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request.email());
-        return ApiResponse.success(null, "Password reset email sent");
+        return ResponseEntity.ok(ApiResponse.success(null, "Password reset email sent"));
     }
 
     @PostMapping("/reset-password")
     @SecurityRequirements
     @Operation(summary = "Reset the password using the token emailed on request")
-    public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request.token(), request.newPassword());
-        return ApiResponse.success(null, "Password reset successfully");
+        return ResponseEntity.ok(ApiResponse.success(null, "Password reset successfully"));
     }
 
     private String extractToken(HttpServletRequest request) {

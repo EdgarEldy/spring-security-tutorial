@@ -1,5 +1,6 @@
 package com.edgareldy.springsecuritytutorial.dto.auth;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,18 +15,20 @@ import jakarta.validation.constraints.Size;
  */
 public record RegisterRequest(
 
-        @NotBlank(message = "firstName must not be blank")
+        @JsonProperty("first_name")
+        @NotBlank(message = "First name must not be blank")
         String firstName,
 
-        @NotBlank(message = "lastName must not be blank")
+        @JsonProperty("last_name")
+        @NotBlank(message = "Last name must not be blank")
         String lastName,
 
-        @NotBlank(message = "email must not be blank")
-        @Email(message = "email must be a valid email address")
+        @NotBlank(message = "Email must not be blank")
+        @Email(message = "Email must be a valid email address")
         String email,
 
-        @NotBlank(message = "password must not be blank")
-        @Size(min = 8, message = "password must be at least 8 characters long")
+        @NotBlank(message = "Password must not be blank")
+        @Size(min = 8, message = "Password must be at least 8 characters long")
         String password
 ) {
 }

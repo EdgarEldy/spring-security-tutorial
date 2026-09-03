@@ -1,5 +1,6 @@
 package com.edgareldy.springsecuritytutorial.dto.auth;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -13,11 +14,12 @@ import jakarta.validation.constraints.Size;
  */
 public record ResetPasswordRequest(
 
-        @NotBlank(message = "token must not be blank")
+        @NotBlank(message = "Token must not be blank")
         String token,
 
-        @NotBlank(message = "newPassword must not be blank")
-        @Size(min = 8, message = "newPassword must be at least 8 characters long")
+        @JsonProperty("new_password")
+        @NotBlank(message = "New password must not be blank")
+        @Size(min = 8, message = "New password must be at least 8 characters long")
         String newPassword
 ) {
 }
