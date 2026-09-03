@@ -1,5 +1,7 @@
 package com.edgareldy.springsecuritytutorial.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Representation of a {@link com.edgareldy.springsecuritytutorial.entity.User}
  * returned by the API. The {@code password} field is deliberately absent:
@@ -12,10 +14,10 @@ package com.edgareldy.springsecuritytutorial.dto.user;
  */
 public record UserResponse(
         Long id,
-        String firstName,
-        String lastName,
+        @JsonProperty("first_name") String firstName,
+        @JsonProperty("last_name") String lastName,
         String email,
         boolean enabled,
-        boolean accountLocked
+        @JsonProperty("account_locked") boolean accountLocked
 ) {
 }

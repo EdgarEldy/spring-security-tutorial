@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -56,46 +57,47 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "List users, paginated")
-    public ApiResponse<PageResponse<UserResponse>> findAll(Pageable pageable) {
-        return ApiResponse.success(userService.findAll(pageable), "Users retrieved successfully");
+    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> findAll(Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.success(userService.findAll(pageable), "Users retrieved successfully"));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get a user by id (admin or the user themselves)")
-    public ApiResponse<UserResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserResponse>> findById(@PathVariable Long id) {
         assertAdminOrOwner(id);
-        return ApiResponse.success(userService.findById(id), "User retrieved successfully");
+        return ResponseEntity.ok(ApiResponse.success(userService.findById(id), "User retrieved successfully"));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update a user's profile (admin or the user themselves)")
-    public ApiResponse<UserResponse> updateProfile(
+    public ResponseEntity<ApiResponse<UserResponse>> updateProfile(
             @PathVariable Long id, @Valid @RequestBody UpdateProfileRequest request) {
         assertAdminOrOwner(id);
-        return ApiResponse.success(userService.updateProfile(id, request), "Profile updated successfully");
+        return ResponseEntity.ok(
+                ApiResponse.success(userService.updateProfile(id, request), "Profile updated successfully"));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete a user account")
-    public ApiResponse<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         userService.delete(id);
-        return ApiResponse.success(null, "User deleted successfully");
+        return ResponseEntity.ok(ApiResponse.success(null, "User deleted successfully"));
     }
 
     @PatchMapping("/{id}/lock")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Lock a user account")
-    public ApiResponse<UserResponse> lock(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserResponse>> lock(@PathVariable Long id) {
         Long currentUserId = userService.findByEmail(currentAuthentication().getName()).id();
-        return ApiResponse.success(userService.lock(id, currentUserId), "User locked successfully");
+        return ResponseEntity.ok(ApiResponse.success(userService.lock(id, currentUserId), "User locked successfully"));
     }
 
     @PatchMapping("/{id}/unlock")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Unlock a user account")
-    public ApiResponse<UserResponse> unlock(@PathVariable Long id) {
-        return ApiResponse.success(userService.unlock(id), "User unlocked successfully");
+    public ResponseEntity<ApiResponse<UserResponse>> unlock(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(userService.unlock(id), "User unlocked successfully"));
     }
 
     private void assertAdminOrOwner(Long id) {

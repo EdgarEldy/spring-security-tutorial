@@ -128,7 +128,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.lastName").value("Byron"));
+                .andExpect(jsonPath("$.data.last_name").value("Byron"));
     }
 
     @Test
@@ -195,7 +195,7 @@ class UserControllerTest {
 
         mockMvc.perform(patch("/api/users/1/lock"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accountLocked").value(true));
+                .andExpect(jsonPath("$.data.account_locked").value(true));
     }
 
     @Test
@@ -224,7 +224,7 @@ class UserControllerTest {
 
         mockMvc.perform(patch("/api/users/1/unlock"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accountLocked").value(false));
+                .andExpect(jsonPath("$.data.account_locked").value(false));
     }
 
     @Test
