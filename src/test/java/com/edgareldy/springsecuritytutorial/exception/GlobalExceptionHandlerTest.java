@@ -36,7 +36,7 @@ class GlobalExceptionHandlerTest {
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
 
     @Test
-    void resourceNotFoundMapsTo404() {
+    void _01_ShouldReturn404_WhenResourceNotFound() {
         HttpServletRequest request = mockRequest("/api/users/99");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response =
@@ -51,7 +51,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void businessRuleMapsTo422() {
+    void _02_ShouldReturn422_WhenBusinessRuleViolated() {
         HttpServletRequest request = mockRequest("/api/users/1/lock");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response = handler.handleBusinessRule(
@@ -62,7 +62,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void invalidTokenMapsTo400() {
+    void _03_ShouldReturn400_WhenTokenIsInvalid() {
         HttpServletRequest request = mockRequest("/api/auth/activate-account");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response = handler.handleInvalidToken(
@@ -74,7 +74,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void badCredentialsMapsTo401() {
+    void _04_ShouldReturn401_WhenCredentialsAreBad() {
         HttpServletRequest request = mockRequest("/api/auth/login");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response =
@@ -86,7 +86,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void lockedAccountMapsTo401() {
+    void _05_ShouldReturn401_WhenAccountIsLocked() {
         HttpServletRequest request = mockRequest("/api/auth/login");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response =
@@ -98,7 +98,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void disabledAccountMapsTo401() {
+    void _06_ShouldReturn401_WhenAccountIsDisabled() {
         HttpServletRequest request = mockRequest("/api/auth/login");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response =
@@ -110,7 +110,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void validationErrorsMapTo400WithFieldErrors() {
+    void _07_ShouldReturn400WithFieldErrors_WhenValidationFails() {
         HttpServletRequest request = mockRequest("/api/users");
         BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "userRequest");
         bindingResult.addError(new FieldError("userRequest", "firstName", "First name must not be blank"));
@@ -127,7 +127,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void genericExceptionMapsTo500() {
+    void _08_ShouldReturn500_WhenUnexpectedExceptionThrown() {
         HttpServletRequest request = mockRequest("/api/users");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response =
