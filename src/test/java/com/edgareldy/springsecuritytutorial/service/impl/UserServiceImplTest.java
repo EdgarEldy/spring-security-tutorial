@@ -66,7 +66,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findAllReturnsPageResponse() {
+    void _01_ShouldReturnPageResponse_WhenListingUsers() {
         Pageable pageable = PageRequest.of(0, 10);
         when(userRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(user), pageable, 1));
         when(userMapper.toResponse(user)).thenReturn(userResponse);
@@ -77,7 +77,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findByIdThrowsWhenMissing() {
+    void _02_ShouldThrowNotFound_WhenUserMissing() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.findById(99L))
@@ -85,7 +85,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findByEmailReturnsResponse() {
+    void _03_ShouldReturnResponse_WhenEmailExists() {
         when(userRepository.findByEmailIgnoreCase("ada@example.com")).thenReturn(Optional.of(user));
         when(userMapper.toResponse(user)).thenReturn(userResponse);
 
@@ -93,7 +93,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findByEmailThrowsWhenMissing() {
+    void _04_ShouldThrowNotFound_WhenEmailMissing() {
         when(userRepository.findByEmailIgnoreCase("missing@example.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.findByEmail("missing@example.com"))
@@ -101,7 +101,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createUserHashesPasswordAndDisablesAccount() {
+    void _05_ShouldHashPasswordAndDisableAccount_WhenCreatingUser() {
         UserRequest request = new UserRequest("Ada", "Lovelace", "ada@example.com", "s3cret!!");
         User mappedEntity = User.builder().firstName("Ada").lastName("Lovelace").email("ada@example.com").build();
         when(userRepository.existsByEmailIgnoreCase("ada@example.com")).thenReturn(false);
@@ -120,7 +120,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createUserThrowsWhenEmailAlreadyUsed() {
+    void _06_ShouldThrowBusinessRule_WhenEmailAlreadyUsed() {
         UserRequest request = new UserRequest("Ada", "Lovelace", "ada@example.com", "s3cret!!");
         when(userRepository.existsByEmailIgnoreCase("ada@example.com")).thenReturn(true);
 
@@ -131,7 +131,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateProfileAppliesRequest() {
+    void _07_ShouldApplyRequest_WhenUpdatingProfile() {
         UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
         UserResponse updated = new UserResponse(1L, "Ada", "Byron", "ada@example.com", true, false);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -144,7 +144,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateProfileThrowsWhenMissing() {
+    void _08_ShouldThrowNotFound_WhenUpdatingMissingUser() {
         UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -153,7 +153,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteRemovesUserWhenExists() {
+    void _09_ShouldRemoveUser_WhenUserExists() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         userService.delete(1L);
@@ -162,7 +162,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteThrowsWhenMissing() {
+    void _10_ShouldThrowNotFound_WhenDeletingMissingUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.delete(99L))
@@ -170,7 +170,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void lockLocksAccountWhenTargetDiffersFromCaller() {
+    void _11_ShouldLockAccount_WhenTargetDiffersFromCaller() {
         UserResponse locked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, true);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
@@ -182,7 +182,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void lockThrowsWhenAdminLocksThemselves() {
+    void _12_ShouldThrowBusinessRule_WhenAdminLocksThemselves() {
         assertThatThrownBy(() -> userService.lock(1L, 1L))
                 .isInstanceOf(BusinessRuleException.class);
 
@@ -190,7 +190,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void lockThrowsWhenMissing() {
+    void _13_ShouldThrowNotFound_WhenLockingMissingUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.lock(99L, 1L))
@@ -198,7 +198,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void unlockUnlocksAccount() {
+    void _14_ShouldUnlockAccount_WhenUserIsLocked() {
         user.setAccountLocked(true);
         UserResponse unlocked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -211,7 +211,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void unlockThrowsWhenMissing() {
+    void _15_ShouldThrowNotFound_WhenUnlockingMissingUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.unlock(99L))

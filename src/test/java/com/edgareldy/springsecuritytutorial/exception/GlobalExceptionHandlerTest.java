@@ -79,7 +79,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void accessDeniedMapsTo403() {
+    void _04_ShouldReturn403_WhenAccessDenied() {
         HttpServletRequest request = mockRequest("/api/users/1");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response =
@@ -93,7 +93,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void _04_ShouldReturn401_WhenCredentialsAreBad() {
+    void _05_ShouldReturn401_WhenCredentialsAreBad() {
         HttpServletRequest request = mockRequest("/api/auth/login");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response =
@@ -106,7 +106,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void _05_ShouldReturn401_WhenAccountIsLocked() {
+    void _06_ShouldReturn401_WhenAccountIsLocked() {
         HttpServletRequest request = mockRequest("/api/auth/login");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response =
@@ -119,7 +119,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void _06_ShouldReturn401_WhenAccountIsDisabled() {
+    void _07_ShouldReturn401_WhenAccountIsDisabled() {
         HttpServletRequest request = mockRequest("/api/auth/login");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response =
@@ -132,7 +132,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void _07_ShouldReturn400WithFieldErrors_WhenValidationFails() {
+    void _08_ShouldReturn400WithFieldErrors_WhenValidationFails() {
         HttpServletRequest request = mockRequest("/api/users");
         BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "userRequest");
         bindingResult.addError(new FieldError("userRequest", "firstName", "First name must not be blank"));
@@ -150,7 +150,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void _08_ShouldReturn500_WhenUnexpectedExceptionThrown() {
+    void _09_ShouldReturn500_WhenUnexpectedExceptionThrown() {
         HttpServletRequest request = mockRequest("/api/users");
 
         ResponseEntity<ApiResponse<ProblemDetail>> response =

@@ -38,7 +38,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    void findByEmailIgnoreCaseReturnsMatchingUser() {
+    void _01_ShouldReturnMatchingUser_WhenFindingByEmail() {
         assertThat(userRepository.findByEmailIgnoreCase("ada@example.com"))
                 .isPresent()
                 .get()
@@ -47,7 +47,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    void findByEmailIgnoreCaseMatchesRegardlessOfCase() {
+    void _02_ShouldMatchEmail_WhenCaseDiffers() {
         assertThat(userRepository.findByEmailIgnoreCase("GRACE@EXAMPLE.COM"))
                 .isPresent()
                 .get()
@@ -56,7 +56,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    void existsByEmailIgnoreCaseReflectsCurrentData() {
+    void _03_ShouldReflectCurrentData_WhenCheckingEmailExists() {
         assertThat(userRepository.existsByEmailIgnoreCase("grace@example.com")).isTrue();
         assertThat(userRepository.existsByEmailIgnoreCase("unknown@example.com")).isFalse();
     }

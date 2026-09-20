@@ -67,7 +67,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void findAllReturns200ForAdmin() throws Exception {
+    void _01_ShouldReturn200_WhenAdminListsUsers() throws Exception {
         PageResponse<UserResponse> page = new PageResponse<>(List.of(owner()), 0, 20, 1, 1);
         when(userService.findAll(any())).thenReturn(page);
 
@@ -80,14 +80,14 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void findAllReturns403ForNonAdmin() throws Exception {
+    void _02_ShouldReturn403_WhenNonAdminListsUsers() throws Exception {
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(username = "ada@example.com")
-    void findByIdReturns200ForOwner() throws Exception {
+    void _03_ShouldReturn200_WhenOwnerReadsUser() throws Exception {
         when(userService.findByEmail("ada@example.com")).thenReturn(owner());
         when(userService.findById(1L)).thenReturn(owner());
 
@@ -98,7 +98,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(username = "eve@example.com")
-    void findByIdReturns403ForNonOwnerNonAdmin() throws Exception {
+    void _04_ShouldReturn403_WhenNonOwnerNonAdminReadsUser() throws Exception {
         when(userService.findByEmail("eve@example.com")).thenReturn(someoneElse());
 
         mockMvc.perform(get("/api/users/1"))
@@ -109,7 +109,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void findByIdReturns200ForAdminWithoutOwnerLookup() throws Exception {
+    void _05_ShouldReturn200_WhenAdminReadsUserWithoutOwnerLookup() throws Exception {
         when(userService.findById(1L)).thenReturn(owner());
 
         mockMvc.perform(get("/api/users/1"))
@@ -120,7 +120,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(username = "ada@example.com")
-    void updateProfileReturns200ForOwner() throws Exception {
+    void _06_ShouldReturn200_WhenOwnerUpdatesProfile() throws Exception {
         UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
         UserResponse updated = new UserResponse(1L, "Ada", "Byron", "ada@example.com", true, false);
         when(userService.findByEmail("ada@example.com")).thenReturn(owner());
@@ -135,7 +135,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(username = "eve@example.com")
-    void updateProfileReturns403ForNonOwnerNonAdmin() throws Exception {
+    void _07_ShouldReturn403_WhenNonOwnerNonAdminUpdatesProfile() throws Exception {
         UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
         when(userService.findByEmail("eve@example.com")).thenReturn(someoneElse());
 
@@ -149,7 +149,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(username = "ada@example.com")
-    void updateProfileReturns400WhenValidationFails() throws Exception {
+    void _08_ShouldReturn400_WhenProfileValidationFails() throws Exception {
         when(userService.findByEmail("ada@example.com")).thenReturn(owner());
         UpdateProfileRequest blank = new UpdateProfileRequest(" ", "");
 
@@ -161,7 +161,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void updateProfileReturns404WhenMissing() throws Exception {
+    void _09_ShouldReturn404_WhenUpdatingMissingUser() throws Exception {
         UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
         when(userService.updateProfile(eq(99L), any()))
                 .thenThrow(new ResourceNotFoundException("User not found with id 99"));
@@ -174,7 +174,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void deleteReturns200ForAdmin() throws Exception {
+    void _10_ShouldReturn200_WhenAdminDeletesUser() throws Exception {
         mockMvc.perform(delete("/api/users/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
@@ -182,14 +182,14 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void deleteReturns403ForNonAdmin() throws Exception {
+    void _11_ShouldReturn403_WhenNonAdminDeletesUser() throws Exception {
         mockMvc.perform(delete("/api/users/1"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN", username = "admin@example.com")
-    void lockReturns200ForAdmin() throws Exception {
+    void _12_ShouldReturn200_WhenAdminLocksUser() throws Exception {
         UserResponse admin = new UserResponse(2L, "Admin", "Person", "admin@example.com", true, false);
         UserResponse locked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, true);
         when(userService.findByEmail("admin@example.com")).thenReturn(admin);
@@ -202,7 +202,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN", username = "admin@example.com")
-    void lockReturns422WhenAdminLocksThemselves() throws Exception {
+    void _13_ShouldReturn422_WhenAdminLocksThemselves() throws Exception {
         UserResponse admin = new UserResponse(1L, "Admin", "Person", "admin@example.com", true, false);
         when(userService.findByEmail("admin@example.com")).thenReturn(admin);
         when(userService.lock(1L, 1L)).thenThrow(new BusinessRuleException("An admin cannot lock their own account"));
@@ -213,14 +213,14 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void lockReturns403ForNonAdmin() throws Exception {
+    void _14_ShouldReturn403_WhenNonAdminLocksUser() throws Exception {
         mockMvc.perform(patch("/api/users/1/lock"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void unlockReturns200ForAdmin() throws Exception {
+    void _15_ShouldReturn200_WhenAdminUnlocksUser() throws Exception {
         UserResponse unlocked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false);
         when(userService.unlock(1L)).thenReturn(unlocked);
 
@@ -231,7 +231,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void unlockReturns403ForNonAdmin() throws Exception {
+    void _16_ShouldReturn403_WhenNonAdminUnlocksUser() throws Exception {
         mockMvc.perform(patch("/api/users/1/unlock"))
                 .andExpect(status().isForbidden());
     }
