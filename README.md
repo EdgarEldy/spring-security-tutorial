@@ -532,6 +532,7 @@ Final integration branch: full authentication, depends on `users`, `roles-permis
 - Every controller returns an `ApiResponse<T>` (see [Standard response format](#standard-response-format))
 - The password and raw tokens are never returned in an HTTP response nor logged in plain text
 - Tokens (activation, reset, JWT) are generated with a cryptographically secure random generator (`SecureRandom` or equivalent)
+- **Test naming convention**: every test method is named `_NN_Should<Outcome>_When<Condition>`, where `NN` is a two-digit sequence number with a leading zero, restarting at `_01_` in each test class and following the order of the methods in the source (e.g. `_01_ShouldReturnRole_WhenRoleExists`, `_02_ShouldReturnEmpty_WhenRoleDoesNotExist`). This applies to every kind of test (unit, repository, controller, integration, parameterized). No other style (`shouldX()`, `testX()`, `givenX_whenY_thenZ()`) is accepted.
 
 ## Concepts covered
 
