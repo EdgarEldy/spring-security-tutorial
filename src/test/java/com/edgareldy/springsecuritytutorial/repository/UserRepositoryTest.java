@@ -78,7 +78,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    void findByEmailIgnoreCaseEagerlyFetchesRolesAndPermissions_soAuthoritiesWorkAfterDetach() {
+    void _04_ShouldFetchRolesAndPermissionsEagerly_WhenFindingByEmailIgnoringCaseThenDetaching() {
         Permission permission = permissionRepository.save(Permission.builder().resource("USER").action("CREATE").build());
         Role role = roleRepository.save(Role.builder()
                 .roleName("ADMIN")
@@ -99,7 +99,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    void _04_ShouldKeepRolesAndPermissionsUsable_WhenUserDetached() {
+    void _05_ShouldKeepRolesAndPermissionsUsable_WhenUserDetached() {
         Permission permission = permissionRepository.save(Permission.builder().resource("USER").action("READ").build());
         Role role = roleRepository.save(Role.builder()
                 .roleName("ADMIN")
