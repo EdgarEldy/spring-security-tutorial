@@ -77,7 +77,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void register_createsUserAndSendsActivationEmail() {
+    void _01_ShouldCreateUserAndSendActivationEmail_WhenUserRegisters() {
         RegisterRequest request = new RegisterRequest("Jane", "Doe", "jane@example.com", "password1");
         UserResponse created = new UserResponse(1L, "Jane", "Doe", "jane@example.com", false, false, List.of());
         when(userService.createUser(any(UserRequest.class))).thenReturn(created);
@@ -92,7 +92,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void activateAccount_validatesTokenThenEnablesAccount() {
+    void _02_ShouldValidateTokenThenEnableAccount_WhenAccountIsActivated() {
         User user = User.builder().id(1L).email("jane@example.com").build();
         when(activationTokenService.validate("token")).thenReturn(user);
 
@@ -102,7 +102,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void login_authenticatesAndReturnsToken() {
+    void _03_ShouldAuthenticateAndReturnToken_WhenLoginIsCalled() {
         User user = User.builder().id(1L).email("jane@example.com").build();
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, List.of());
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
@@ -114,7 +114,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void logout_blacklistsToken() {
+    void _04_ShouldBlacklistToken_WhenLogoutIsCalled() {
         when(jwtService.extractJti("raw-token")).thenReturn("jti-1");
         when(jwtService.extractUsername("raw-token")).thenReturn("jane@example.com");
         Instant expiresAt = Instant.now().plusSeconds(60);
@@ -128,7 +128,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void me_returnsCurrentAuthenticatedUser() {
+    void _05_ShouldReturnCurrentAuthenticatedUser_WhenMeIsCalled() {
         Authentication authentication = new UsernamePasswordAuthenticationToken("jane@example.com", null, List.of());
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserResponse response = new UserResponse(1L, "Jane", "Doe", "jane@example.com", true, false, List.of());
@@ -138,7 +138,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void forgotPassword_generatesTokenAndSendsEmail() {
+    void _06_ShouldGenerateTokenAndSendEmail_WhenForgotPasswordIsRequested() {
         User user = User.builder().id(1L).email("jane@example.com").build();
         when(userRepository.findByEmailIgnoreCase("jane@example.com")).thenReturn(Optional.of(user));
         when(passwordResetTokenService.generate(user)).thenReturn("reset-token");
@@ -149,7 +149,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void forgotPassword_throws_whenUserNotFound() {
+    void _07_ShouldThrowException_WhenForgotPasswordUserIsNotFound() {
         when(userRepository.findByEmailIgnoreCase("missing@example.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> authService.forgotPassword("missing@example.com"))
@@ -157,7 +157,7 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void resetPassword_consumesTokenThenUpdatesPassword() {
+    void _08_ShouldConsumeTokenThenUpdatePassword_WhenPasswordIsReset() {
         User user = User.builder().id(1L).email("jane@example.com").build();
         when(passwordResetTokenService.validateAndConsume("token")).thenReturn(user);
 
