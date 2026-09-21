@@ -33,12 +33,12 @@ class PermissionRepositoryTest {
     }
 
     @Test
-    void existsByResourceIgnoreCaseAndActionIgnoreCaseMatchesRegardlessOfCase() {
+    void _01_ShouldMatchPair_WhenCaseDiffers() {
         assertThat(permissionRepository.existsByResourceIgnoreCaseAndActionIgnoreCase("product", "write")).isTrue();
     }
 
     @Test
-    void existsByResourceIgnoreCaseAndActionIgnoreCaseReturnsFalseWhenNoMatch() {
+    void _02_ShouldReturnFalse_WhenPairHasNoMatch() {
         assertThat(permissionRepository.existsByResourceIgnoreCaseAndActionIgnoreCase("USER", "DELETE")).isFalse();
     }
 }

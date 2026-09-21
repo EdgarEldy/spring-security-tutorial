@@ -45,7 +45,7 @@ class RoleRepositoryTest {
     }
 
     @Test
-    void findByRoleNameIgnoreCaseReturnsMatchingRole() {
+    void _01_ShouldReturnMatchingRole_WhenFindingByRoleName() {
         assertThat(roleRepository.findByRoleNameIgnoreCase("admin"))
                 .isPresent()
                 .get()
@@ -54,18 +54,18 @@ class RoleRepositoryTest {
     }
 
     @Test
-    void existsByRoleNameIgnoreCaseReflectsCurrentData() {
+    void _02_ShouldReflectCurrentData_WhenCheckingRoleNameExists() {
         assertThat(roleRepository.existsByRoleNameIgnoreCase("ADMIN")).isTrue();
         assertThat(roleRepository.existsByRoleNameIgnoreCase("unknown")).isFalse();
     }
 
     @Test
-    void existsByPermissionsIdReflectsAssignment() {
+    void _03_ShouldReturnTrue_WhenPermissionIsAssignedToRole() {
         assertThat(roleRepository.existsByPermissions_Id(permission.getId())).isTrue();
     }
 
     @Test
-    void existsByPermissionsIdReturnsFalseForUnassignedPermission() {
+    void _04_ShouldReturnFalse_WhenPermissionIsUnassigned() {
         Permission other = permissionRepository.save(Permission.builder().resource("USER").action("DELETE").build());
 
         assertThat(roleRepository.existsByPermissions_Id(other.getId())).isFalse();

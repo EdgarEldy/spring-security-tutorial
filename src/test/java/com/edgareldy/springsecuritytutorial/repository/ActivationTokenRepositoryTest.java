@@ -43,7 +43,7 @@ class ActivationTokenRepositoryTest {
     }
 
     @Test
-    void findByTokenReturnsMatchingToken() {
+    void _01_ShouldReturnMatchingToken_WhenFindingByToken() {
         activationTokenRepository.save(ActivationToken.builder()
                 .user(user).token("raw-token")
                 .createdAt(Instant.now()).expiresAt(Instant.now().plus(1, ChronoUnit.DAYS))
@@ -57,12 +57,12 @@ class ActivationTokenRepositoryTest {
     }
 
     @Test
-    void findByTokenReturnsEmptyWhenMissing() {
+    void _02_ShouldReturnEmpty_WhenTokenIsMissing() {
         assertThat(activationTokenRepository.findByToken("unknown")).isEmpty();
     }
 
     @Test
-    void deleteAllByExpiresAtBeforeRemovesOnlyExpiredTokens() {
+    void _03_ShouldRemoveOnlyExpiredTokens_WhenDeletingByExpiresAtBefore() {
         ActivationToken expired = activationTokenRepository.save(ActivationToken.builder()
                 .user(user).token("expired-token")
                 .createdAt(Instant.now().minus(2, ChronoUnit.DAYS))

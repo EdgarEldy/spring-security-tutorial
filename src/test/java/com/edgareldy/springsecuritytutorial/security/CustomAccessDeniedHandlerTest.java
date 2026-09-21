@@ -23,7 +23,7 @@ class CustomAccessDeniedHandlerTest {
             new CustomAccessDeniedHandler(new ObjectMapper().findAndRegisterModules());
 
     @Test
-    void handle_writesForbiddenApiResponse() throws Exception {
+    void _01_ShouldWriteForbiddenApiResponse_WhenAccessIsDenied() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
 

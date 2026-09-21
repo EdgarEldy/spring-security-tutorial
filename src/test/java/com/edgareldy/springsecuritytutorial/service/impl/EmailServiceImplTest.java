@@ -41,7 +41,7 @@ class EmailServiceImplTest {
     }
 
     @Test
-    void sendActivationEmailIncludesTokenLink() {
+    void _01_ShouldIncludeTokenLink_WhenActivationEmailIsSent() {
         emailService.sendActivationEmail(user, "raw-token");
 
         ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
@@ -53,7 +53,7 @@ class EmailServiceImplTest {
     }
 
     @Test
-    void sendPasswordResetEmailIncludesTokenLink() {
+    void _02_ShouldIncludeTokenLink_WhenPasswordResetEmailIsSent() {
         emailService.sendPasswordResetEmail(user, "reset-token");
 
         ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
@@ -65,7 +65,7 @@ class EmailServiceImplTest {
     }
 
     @Test
-    void sendMethodsRunOnTheEmailTaskExecutor() throws NoSuchMethodException {
+    void _03_ShouldRunOnEmailTaskExecutor_WhenEmailsAreSent() throws NoSuchMethodException {
         var sendActivation = EmailServiceImpl.class.getMethod("sendActivationEmail", User.class, String.class);
         var sendReset = EmailServiceImpl.class.getMethod("sendPasswordResetEmail", User.class, String.class);
 
