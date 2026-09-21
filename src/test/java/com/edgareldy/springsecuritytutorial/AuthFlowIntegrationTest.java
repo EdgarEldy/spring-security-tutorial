@@ -61,7 +61,7 @@ class AuthFlowIntegrationTest {
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Test
-    void fullFlow_registerActivateLoginAccessProtectedLogoutThenRejected() throws Exception {
+    void _01_ShouldRejectRequestAfterLogout_WhenFullRegisterActivateLoginFlowIsFollowed() throws Exception {
         String email = "flow@example.com";
         register(email, "password1");
         String activationToken = findActivationToken(email);
@@ -83,7 +83,7 @@ class AuthFlowIntegrationTest {
     }
 
     @Test
-    void login_rejected_whenAccountNotActivated() throws Exception {
+    void _02_ShouldRejectLogin_WhenAccountIsNotActivated() throws Exception {
         String email = "unactivated@example.com";
         register(email, "password1");
 
@@ -94,7 +94,7 @@ class AuthFlowIntegrationTest {
     }
 
     @Test
-    void login_rejected_whenAccountLocked() throws Exception {
+    void _03_ShouldRejectLogin_WhenAccountIsLocked() throws Exception {
         String email = "locked@example.com";
         register(email, "password1");
         mockMvc.perform(get("/api/auth/activate-account").param("token", findActivationToken(email)))
@@ -111,7 +111,7 @@ class AuthFlowIntegrationTest {
     }
 
     @Test
-    void login_rejected_whenPasswordWrong() throws Exception {
+    void _04_ShouldRejectLogin_WhenPasswordIsWrong() throws Exception {
         String email = "wrongpass@example.com";
         register(email, "password1");
         mockMvc.perform(get("/api/auth/activate-account").param("token", findActivationToken(email)))
@@ -124,7 +124,7 @@ class AuthFlowIntegrationTest {
     }
 
     @Test
-    void activateAccount_rejected_whenTokenExpired() throws Exception {
+    void _05_ShouldRejectActivation_WhenTokenIsExpired() throws Exception {
         String email = "expiredtoken@example.com";
         register(email, "password1");
         ActivationToken activationToken = findActivationTokenEntity(email);
@@ -136,7 +136,7 @@ class AuthFlowIntegrationTest {
     }
 
     @Test
-    void activateAccount_rejected_whenTokenAlreadyUsed() throws Exception {
+    void _06_ShouldRejectActivation_WhenTokenIsAlreadyUsed() throws Exception {
         String email = "reusedtoken@example.com";
         register(email, "password1");
         String token = findActivationToken(email);
@@ -148,7 +148,7 @@ class AuthFlowIntegrationTest {
     }
 
     @Test
-    void resetPassword_allowsLoginWithNewPassword_andCannotBeReused() throws Exception {
+    void _07_ShouldAllowLoginWithNewPasswordAndRejectReuse_WhenPasswordIsReset() throws Exception {
         String email = "reset@example.com";
         register(email, "password1");
         mockMvc.perform(get("/api/auth/activate-account").param("token", findActivationToken(email)))
