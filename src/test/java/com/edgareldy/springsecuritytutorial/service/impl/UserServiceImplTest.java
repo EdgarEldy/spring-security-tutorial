@@ -336,7 +336,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void enableAccountEnablesUser() {
+    void _25_ShouldEnableUser_WhenAccountIsEnabled() {
         user.setEnabled(false);
         UserResponse enabled = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -349,7 +349,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void enableAccountThrowsWhenMissing() {
+    void _26_ShouldThrowNotFound_WhenEnabledUserIsMissing() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.enableAccount(99L))
@@ -357,7 +357,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updatePasswordHashesAndSavesNewPassword() {
+    void _27_ShouldHashAndSaveNewPassword_WhenPasswordIsUpdated() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.encode("newPassword1")).thenReturn("new-hashed");
         when(userRepository.save(user)).thenReturn(user);
@@ -368,7 +368,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updatePasswordThrowsWhenMissing() {
+    void _28_ShouldThrowNotFound_WhenUpdatedPasswordUserIsMissing() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.updatePassword(99L, "newPassword1"))
