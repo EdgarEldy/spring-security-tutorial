@@ -42,7 +42,7 @@ class TokenCleanupSchedulerTest {
     private TokenCleanupScheduler tokenCleanupScheduler;
 
     @Test
-    void purgeExpiredActivationTokensOnlyTouchesActivationTokenRepository() {
+    void _01_ShouldOnlyTouchActivationTokenRepository_WhenExpiredActivationTokensArePurged() {
         tokenCleanupScheduler.purgeExpiredActivationTokens();
 
         verify(activationTokenRepository).deleteAllByExpiresAtBefore(any(Instant.class));
@@ -51,7 +51,7 @@ class TokenCleanupSchedulerTest {
     }
 
     @Test
-    void purgeExpiredPasswordResetTokensOnlyTouchesPasswordResetTokenRepository() {
+    void _02_ShouldOnlyTouchPasswordResetTokenRepository_WhenExpiredPasswordResetTokensArePurged() {
         tokenCleanupScheduler.purgeExpiredPasswordResetTokens();
 
         verify(passwordResetTokenRepository).deleteAllByExpiryDateBefore(any(Instant.class));
@@ -60,7 +60,7 @@ class TokenCleanupSchedulerTest {
     }
 
     @Test
-    void purgeExpiredBlacklistedTokensOnlyTouchesBlacklistedTokenRepository() {
+    void _03_ShouldOnlyTouchBlacklistedTokenRepository_WhenExpiredBlacklistedTokensArePurged() {
         tokenCleanupScheduler.purgeExpiredBlacklistedTokens();
 
         verify(blacklistedTokenRepository).deleteAllByExpiresAtBefore(any(Instant.class));

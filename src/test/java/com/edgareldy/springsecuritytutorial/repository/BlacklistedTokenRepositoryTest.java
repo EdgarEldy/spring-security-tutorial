@@ -48,13 +48,13 @@ class BlacklistedTokenRepositoryTest {
     }
 
     @Test
-    void existsByJtiReflectsCurrentData() {
+    void _01_ShouldReflectCurrentData_WhenCheckingExistenceByJti() {
         assertThat(blacklistedTokenRepository.existsByJti("jti-123")).isTrue();
         assertThat(blacklistedTokenRepository.existsByJti("unknown-jti")).isFalse();
     }
 
     @Test
-    void deleteAllByExpiresAtBeforeRemovesOnlyExpiredEntries() {
+    void _02_ShouldRemoveOnlyExpiredEntries_WhenDeletingByExpiresAtBefore() {
         BlacklistedToken expired = blacklistedTokenRepository.save(BlacklistedToken.builder()
                 .user(user).token("expired.jwt.value").jti("jti-expired")
                 .blacklistedAt(Instant.now()).createdAt(Instant.now())

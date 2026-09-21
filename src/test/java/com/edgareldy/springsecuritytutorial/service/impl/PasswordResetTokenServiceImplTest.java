@@ -53,7 +53,7 @@ class PasswordResetTokenServiceImplTest {
     }
 
     @Test
-    void generateSavesTokenAndReturnsRawValue() {
+    void _01_ShouldSaveTokenAndReturnRawValue_WhenTokenIsGenerated() {
         when(secureTokenGenerator.generate()).thenReturn("raw-token");
 
         String result = passwordResetTokenService.generate(user);
@@ -68,7 +68,7 @@ class PasswordResetTokenServiceImplTest {
     }
 
     @Test
-    void validateAndConsumeDeletesTokenAndReturnsUser() {
+    void _02_ShouldDeleteTokenAndReturnUser_WhenTokenIsValid() {
         PasswordResetToken token = PasswordResetToken.builder()
                 .id(1L).user(user).token("raw-token").type("PASSWORD_RESET")
                 .expiryDate(Instant.now().plus(1, ChronoUnit.HOURS))
@@ -82,7 +82,7 @@ class PasswordResetTokenServiceImplTest {
     }
 
     @Test
-    void validateAndConsumeThrowsWhenTokenMissing() {
+    void _03_ShouldThrowException_WhenTokenIsMissing() {
         when(passwordResetTokenRepository.findByToken("missing")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> passwordResetTokenService.validateAndConsume("missing"))
@@ -92,7 +92,7 @@ class PasswordResetTokenServiceImplTest {
     }
 
     @Test
-    void validateAndConsumeThrowsWhenExpiredButStillDeletesToken() {
+    void _04_ShouldThrowExceptionAndStillDeleteToken_WhenTokenIsExpired() {
         PasswordResetToken token = PasswordResetToken.builder()
                 .id(1L).user(user).token("raw-token").type("PASSWORD_RESET")
                 .expiryDate(Instant.now().minus(1, ChronoUnit.HOURS))

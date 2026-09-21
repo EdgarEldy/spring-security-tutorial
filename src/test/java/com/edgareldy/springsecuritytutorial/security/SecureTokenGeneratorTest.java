@@ -18,12 +18,12 @@ class SecureTokenGeneratorTest {
     private final SecureTokenGenerator generator = new SecureTokenGenerator();
 
     @Test
-    void generateReturnsNonBlankValue() {
+    void _01_ShouldReturnNonBlankValue_WhenTokenIsGenerated() {
         assertThat(generator.generate()).isNotBlank();
     }
 
     @Test
-    void generateReturnsDifferentValuesEachTime() {
+    void _02_ShouldReturnDifferentValues_WhenTokensAreGeneratedRepeatedly() {
         String first = generator.generate();
         String second = generator.generate();
 
@@ -31,7 +31,7 @@ class SecureTokenGeneratorTest {
     }
 
     @Test
-    void generateProducesUrlSafeTokensAcrossManyCalls() {
+    void _03_ShouldProduceUrlSafeTokens_WhenManyTokensAreGenerated() {
         boolean allUrlSafe = IntStream.range(0, 100)
                 .mapToObj(i -> generator.generate())
                 .allMatch(token -> token.matches("[A-Za-z0-9_-]+"));

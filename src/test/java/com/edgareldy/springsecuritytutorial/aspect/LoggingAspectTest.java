@@ -46,7 +46,7 @@ class LoggingAspectTest {
     }
 
     @Test
-    void maskArgumentWhoseParameterNameIsSensitive() throws Throwable {
+    void _01_ShouldMaskArgument_WhenParameterNameIsSensitive() throws Throwable {
         ProceedingJoinPoint joinPoint = fakeJoinPoint(
                 "validate", new Class<?>[] {String.class}, new Object[] {"raw-secret-token"}, "unused-result");
 
@@ -57,7 +57,7 @@ class LoggingAspectTest {
     }
 
     @Test
-    void maskReturnValueOfGenerateOnATokenService() throws Throwable {
+    void _02_ShouldMaskReturnValue_WhenGenerateIsCalledOnATokenService() throws Throwable {
         ProceedingJoinPoint joinPoint = fakeJoinPoint(
                 "generate", new Class<?>[] {String.class}, new Object[] {"someUser"}, "raw-generated-token");
 
@@ -67,7 +67,7 @@ class LoggingAspectTest {
     }
 
     @Test
-    void doesNotMaskNonSensitiveArgumentsOrReturnValues() throws Throwable {
+    void _03_ShouldNotMaskAnything_WhenArgumentsAndReturnValuesAreNotSensitive() throws Throwable {
         ProceedingJoinPoint joinPoint = fakeJoinPoint(FakeGenericService.class,
                 "describe", new Class<?>[] {String.class}, new Object[] {"plain-value"}, "plain-result");
 
