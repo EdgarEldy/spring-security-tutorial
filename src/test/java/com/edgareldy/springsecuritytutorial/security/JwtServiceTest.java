@@ -35,7 +35,7 @@ class JwtServiceTest {
     }
 
     @Test
-    void generateToken_embedsSubjectRolesAndPermissions() {
+    void _01_ShouldEmbedSubjectRolesAndPermissions_WhenTokenIsGenerated() {
         Permission permission = Permission.builder().resource("user").action("create").build();
         Role role = Role.builder().roleName("admin").permissions(Set.of(permission)).build();
         User user = User.builder().email("jane@example.com").roles(Set.of(role)).build();
@@ -53,7 +53,7 @@ class JwtServiceTest {
     }
 
     @Test
-    void extractUsername_returnsSubject() {
+    void _02_ShouldReturnSubject_WhenUsernameIsExtracted() {
         User user = User.builder().email("jane@example.com").roles(Set.of()).build();
         String token = jwtService.generateToken(user);
 
@@ -61,7 +61,7 @@ class JwtServiceTest {
     }
 
     @Test
-    void extractJti_returnsUniqueIdPerToken() {
+    void _03_ShouldReturnUniqueIdPerToken_WhenJtiIsExtracted() {
         User user = User.builder().email("jane@example.com").roles(Set.of()).build();
 
         String first = jwtService.generateToken(user);
@@ -71,7 +71,7 @@ class JwtServiceTest {
     }
 
     @Test
-    void extractExpiration_isAfterNow() {
+    void _04_ShouldBeAfterNow_WhenExpirationIsExtracted() {
         User user = User.builder().email("jane@example.com").roles(Set.of()).build();
         String token = jwtService.generateToken(user);
 
