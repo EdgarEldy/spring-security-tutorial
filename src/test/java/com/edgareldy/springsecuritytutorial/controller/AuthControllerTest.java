@@ -69,7 +69,7 @@ class AuthControllerTest {
     private UserDetailsServiceImpl userDetailsService;
 
     @Test
-    void register_returnsCreatedUser() throws Exception {
+    void _01_ShouldReturnCreatedUser_WhenRegistrationSucceeds() throws Exception {
         RegisterRequest request = new RegisterRequest("Jane", "Doe", "jane@example.com", "password1");
         UserResponse response = new UserResponse(1L, "Jane", "Doe", "jane@example.com", false, false, List.of());
         when(authService.register(any(RegisterRequest.class))).thenReturn(response);
@@ -83,7 +83,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void register_rejectsInvalidPayload() throws Exception {
+    void _02_ShouldRejectRegistration_WhenPayloadIsInvalid() throws Exception {
         RegisterRequest request = new RegisterRequest("", "", "not-an-email", "short");
 
         mockMvc.perform(post("/api/auth/register")
@@ -95,7 +95,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void activateAccount_delegatesToService() throws Exception {
+    void _03_ShouldDelegateToService_WhenAccountIsActivated() throws Exception {
         mockMvc.perform(get("/api/auth/activate-account").param("token", "activation-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
@@ -104,7 +104,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void login_returnsToken() throws Exception {
+    void _04_ShouldReturnToken_WhenLoginSucceeds() throws Exception {
         LoginRequest request = new LoginRequest("jane@example.com", "password1");
         when(authService.login(any(LoginRequest.class))).thenReturn(new AuthResponse("jwt-token"));
 
@@ -117,7 +117,7 @@ class AuthControllerTest {
 
     @Test
     @WithMockUser(username = "jane@example.com")
-    void logout_extractsBearerTokenAndDelegatesToService() throws Exception {
+    void _05_ShouldExtractBearerTokenAndDelegateToService_WhenLogoutIsCalled() throws Exception {
         mockMvc.perform(post("/api/auth/logout").header("Authorization", "Bearer jwt-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
@@ -127,7 +127,7 @@ class AuthControllerTest {
 
     @Test
     @WithMockUser(username = "jane@example.com")
-    void me_returnsCurrentUser() throws Exception {
+    void _06_ShouldReturnCurrentUser_WhenMeIsQueried() throws Exception {
         UserResponse response = new UserResponse(1L, "Jane", "Doe", "jane@example.com", true, false, List.of());
         when(authService.me()).thenReturn(response);
 
@@ -137,7 +137,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void forgotPassword_delegatesToService() throws Exception {
+    void _07_ShouldDelegateToService_WhenForgotPasswordIsRequested() throws Exception {
         ForgotPasswordRequest request = new ForgotPasswordRequest("jane@example.com");
 
         mockMvc.perform(post("/api/auth/forgot-password")
@@ -149,7 +149,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void resetPassword_delegatesToService() throws Exception {
+    void _08_ShouldDelegateToService_WhenPasswordIsReset() throws Exception {
         ResetPasswordRequest request = new ResetPasswordRequest("reset-token", "newPassword1");
 
         mockMvc.perform(post("/api/auth/reset-password")
