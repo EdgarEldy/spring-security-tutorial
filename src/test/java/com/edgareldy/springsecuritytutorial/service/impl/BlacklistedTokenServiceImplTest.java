@@ -35,7 +35,7 @@ class BlacklistedTokenServiceImplTest {
     private BlacklistedTokenServiceImpl blacklistedTokenService;
 
     @Test
-    void blacklistSavesEntryWithGivenJtiAndExpiry() {
+    void _01_ShouldSaveEntryWithJtiAndExpiry_WhenTokenIsBlacklisted() {
         User user = User.builder().id(1L).email("ada@example.com").build();
         Instant expiresAt = Instant.now().plus(1, ChronoUnit.HOURS);
 
@@ -52,7 +52,7 @@ class BlacklistedTokenServiceImplTest {
     }
 
     @Test
-    void isBlacklistedDelegatesToRepository() {
+    void _02_ShouldDelegateToRepository_WhenBlacklistStatusIsChecked() {
         when(blacklistedTokenRepository.existsByJti("jti-123")).thenReturn(true);
         when(blacklistedTokenRepository.existsByJti("jti-456")).thenReturn(false);
 

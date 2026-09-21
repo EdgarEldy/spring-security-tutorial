@@ -64,7 +64,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_authenticates_whenTokenValidAndNotBlacklisted() throws Exception {
+    void _01_ShouldAuthenticate_WhenTokenIsValidAndNotBlacklisted() throws Exception {
         when(request.getHeader("Authorization")).thenReturn("Bearer valid-token");
         when(jwtService.extractJti("valid-token")).thenReturn("jti-1");
         when(blacklistedTokenService.isBlacklisted("jti-1")).thenReturn(false);
@@ -80,7 +80,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_skipsAuthentication_whenTokenBlacklisted() throws Exception {
+    void _02_ShouldSkipAuthentication_WhenTokenIsBlacklisted() throws Exception {
         when(request.getHeader("Authorization")).thenReturn("Bearer blacklisted-token");
         when(jwtService.extractJti("blacklisted-token")).thenReturn("jti-2");
         when(blacklistedTokenService.isBlacklisted("jti-2")).thenReturn(true);
@@ -92,7 +92,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_skipsAuthentication_whenNoAuthorizationHeader() throws Exception {
+    void _03_ShouldSkipAuthentication_WhenAuthorizationHeaderIsMissing() throws Exception {
         when(request.getHeader("Authorization")).thenReturn(null);
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
@@ -103,7 +103,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_skipsAuthentication_whenTokenInvalid() throws Exception {
+    void _04_ShouldSkipAuthentication_WhenTokenIsInvalid() throws Exception {
         when(request.getHeader("Authorization")).thenReturn("Bearer malformed-token");
         when(jwtService.extractJti("malformed-token")).thenThrow(new io.jsonwebtoken.MalformedJwtException("bad token"));
 

@@ -34,7 +34,7 @@ class UserDetailsServiceImplTest {
     private UserDetailsServiceImpl userDetailsService;
 
     @Test
-    void loadUserByUsername_returnsUser_whenEmailExists() {
+    void _01_ShouldReturnUser_WhenEmailExists() {
         User user = User.builder().id(1L).email("jane@example.com").build();
         when(userRepository.findByEmailIgnoreCase("jane@example.com")).thenReturn(Optional.of(user));
 
@@ -44,7 +44,7 @@ class UserDetailsServiceImplTest {
     }
 
     @Test
-    void loadUserByUsername_throws_whenEmailNotFound() {
+    void _02_ShouldThrowException_WhenEmailIsNotFound() {
         when(userRepository.findByEmailIgnoreCase("missing@example.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userDetailsService.loadUserByUsername("missing@example.com"))

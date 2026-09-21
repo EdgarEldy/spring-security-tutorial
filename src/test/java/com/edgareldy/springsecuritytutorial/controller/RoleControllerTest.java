@@ -77,7 +77,7 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void findAllReturns200ForAdmin() throws Exception {
+    void _01_ShouldReturn200_WhenAdminListsRoles() throws Exception {
         when(roleService.findAll()).thenReturn(List.of(savedResponse()));
 
         mockMvc.perform(get("/api/roles"))
@@ -87,14 +87,14 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void findAllReturns403ForNonAdmin() throws Exception {
+    void _02_ShouldReturn403_WhenNonAdminListsRoles() throws Exception {
         mockMvc.perform(get("/api/roles"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void createReturns201WhenValid() throws Exception {
+    void _03_ShouldReturn201_WhenCreateRequestValid() throws Exception {
         RoleRequest request = new RoleRequest("ADMIN");
         when(roleService.create(any())).thenReturn(savedResponse());
 
@@ -107,7 +107,7 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void createReturns422WhenAlreadyExists() throws Exception {
+    void _04_ShouldReturn422_WhenRoleAlreadyExists() throws Exception {
         RoleRequest request = new RoleRequest("ADMIN");
         when(roleService.create(any())).thenThrow(new BusinessRuleException("Role ADMIN already exists"));
 
@@ -119,7 +119,7 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void updateReturns200WhenValid() throws Exception {
+    void _05_ShouldReturn200_WhenUpdateRequestValid() throws Exception {
         RoleRequest request = new RoleRequest("MODERATOR");
         when(roleService.update(eq(1L), any())).thenReturn(new RoleResponse(1L, "MODERATOR", List.of()));
 
@@ -132,7 +132,7 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void updateReturns404WhenMissing() throws Exception {
+    void _06_ShouldReturn404_WhenUpdatingMissingRole() throws Exception {
         RoleRequest request = new RoleRequest("MODERATOR");
         when(roleService.update(eq(99L), any()))
                 .thenThrow(new ResourceNotFoundException("Role not found with id 99"));
@@ -145,7 +145,7 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void deleteReturns200WhenSuccessful() throws Exception {
+    void _07_ShouldReturn200_WhenDeleteSucceeds() throws Exception {
         mockMvc.perform(delete("/api/roles/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
@@ -153,14 +153,14 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void deleteReturns403ForNonAdmin() throws Exception {
+    void _08_ShouldReturn403_WhenNonAdminDeletesRole() throws Exception {
         mockMvc.perform(delete("/api/roles/1"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void deleteReturns404WhenMissing() throws Exception {
+    void _09_ShouldReturn404_WhenDeletingMissingRole() throws Exception {
         doThrow(new ResourceNotFoundException("Role not found with id 99"))
                 .when(roleService).delete(99L);
 
@@ -170,7 +170,7 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void assignPermissionReturns200ForAdmin() throws Exception {
+    void _10_ShouldReturn200_WhenAdminAssignsPermission() throws Exception {
         when(roleService.assignPermission(1L, 2L)).thenReturn(savedResponse());
 
         mockMvc.perform(post("/api/roles/1/permissions/2"))
@@ -180,14 +180,14 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void assignPermissionReturns403ForNonAdmin() throws Exception {
+    void _11_ShouldReturn403_WhenNonAdminAssignsPermission() throws Exception {
         mockMvc.perform(post("/api/roles/1/permissions/2"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void assignPermissionReturns422WhenAlreadyAssigned() throws Exception {
+    void _12_ShouldReturn422_WhenPermissionAlreadyAssigned() throws Exception {
         when(roleService.assignPermission(1L, 2L))
                 .thenThrow(new BusinessRuleException("Permission 2 is already assigned to role 1"));
 
@@ -197,7 +197,7 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void assignPermissionReturns404WhenPermissionMissing() throws Exception {
+    void _13_ShouldReturn404_WhenAssigningMissingPermission() throws Exception {
         when(roleService.assignPermission(1L, 99L))
                 .thenThrow(new ResourceNotFoundException("Permission not found with id 99"));
 
@@ -207,7 +207,7 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void removePermissionReturns200ForAdmin() throws Exception {
+    void _14_ShouldReturn200_WhenAdminRemovesPermission() throws Exception {
         when(roleService.removePermission(1L, 2L)).thenReturn(savedResponse());
 
         mockMvc.perform(delete("/api/roles/1/permissions/2"))
@@ -217,14 +217,14 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void removePermissionReturns403ForNonAdmin() throws Exception {
+    void _15_ShouldReturn403_WhenNonAdminRemovesPermission() throws Exception {
         mockMvc.perform(delete("/api/roles/1/permissions/2"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void removePermissionReturns422WhenNotAssigned() throws Exception {
+    void _16_ShouldReturn422_WhenPermissionNotAssigned() throws Exception {
         when(roleService.removePermission(1L, 2L))
                 .thenThrow(new BusinessRuleException("Permission 2 is not assigned to role 1"));
 
@@ -234,7 +234,7 @@ class RoleControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void removePermissionReturns404WhenPermissionMissing() throws Exception {
+    void _17_ShouldReturn404_WhenRemovingMissingPermission() throws Exception {
         when(roleService.removePermission(1L, 99L))
                 .thenThrow(new ResourceNotFoundException("Permission not found with id 99"));
 

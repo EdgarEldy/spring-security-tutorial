@@ -77,7 +77,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findAllReturnsPageResponse() {
+    void _01_ShouldReturnPageResponse_WhenListingUsers() {
         Pageable pageable = PageRequest.of(0, 10);
         when(userRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(user), pageable, 1));
         when(userMapper.toResponse(user)).thenReturn(userResponse);
@@ -88,7 +88,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findByIdThrowsWhenMissing() {
+    void _02_ShouldThrowNotFound_WhenUserMissing() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.findById(99L))
@@ -96,7 +96,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findByIdReturnsDetailResponseWithRoles() {
+    void _03_ShouldReturnDetailResponseWithRoles_WhenUserFound() {
         Role role = Role.builder().id(1L).roleName("ADMIN").build();
         user.getRoles().add(role);
         RoleResponse roleResponse = new RoleResponse(1L, "ADMIN", List.of());
@@ -111,7 +111,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findByEmailReturnsResponse() {
+    void _04_ShouldReturnResponse_WhenEmailExists() {
         when(userRepository.findByEmailIgnoreCase("ada@example.com")).thenReturn(Optional.of(user));
         when(userMapper.toResponse(user)).thenReturn(userResponse);
 
@@ -119,7 +119,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void findByEmailThrowsWhenMissing() {
+    void _05_ShouldThrowNotFound_WhenEmailMissing() {
         when(userRepository.findByEmailIgnoreCase("missing@example.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.findByEmail("missing@example.com"))
@@ -127,7 +127,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createUserHashesPasswordAndDisablesAccount() {
+    void _06_ShouldHashPasswordAndDisableAccount_WhenCreatingUser() {
         UserRequest request = new UserRequest("Ada", "Lovelace", "ada@example.com", "s3cret!!");
         User mappedEntity = User.builder().firstName("Ada").lastName("Lovelace").email("ada@example.com").build();
         when(userRepository.existsByEmailIgnoreCase("ada@example.com")).thenReturn(false);
@@ -146,7 +146,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createUserThrowsWhenEmailAlreadyUsed() {
+    void _07_ShouldThrowBusinessRule_WhenEmailAlreadyUsed() {
         UserRequest request = new UserRequest("Ada", "Lovelace", "ada@example.com", "s3cret!!");
         when(userRepository.existsByEmailIgnoreCase("ada@example.com")).thenReturn(true);
 
@@ -157,7 +157,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateProfileAppliesRequest() {
+    void _08_ShouldApplyRequest_WhenUpdatingProfile() {
         UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
         UserResponse updated = new UserResponse(1L, "Ada", "Byron", "ada@example.com", true, false, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -170,7 +170,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateProfileThrowsWhenMissing() {
+    void _09_ShouldThrowNotFound_WhenUpdatingMissingUser() {
         UpdateProfileRequest request = new UpdateProfileRequest("Ada", "Byron");
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -179,7 +179,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteRemovesUserWhenExists() {
+    void _10_ShouldRemoveUser_WhenUserExists() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         userService.delete(1L);
@@ -188,7 +188,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteThrowsWhenMissing() {
+    void _11_ShouldThrowNotFound_WhenDeletingMissingUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.delete(99L))
@@ -196,7 +196,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void lockLocksAccountWhenTargetDiffersFromCaller() {
+    void _12_ShouldLockAccount_WhenTargetDiffersFromCaller() {
         UserResponse locked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, true, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
@@ -208,7 +208,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void lockThrowsWhenAdminLocksThemselves() {
+    void _13_ShouldThrowBusinessRule_WhenAdminLocksThemselves() {
         assertThatThrownBy(() -> userService.lock(1L, 1L))
                 .isInstanceOf(BusinessRuleException.class);
 
@@ -216,7 +216,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void lockThrowsWhenMissing() {
+    void _14_ShouldThrowNotFound_WhenLockingMissingUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.lock(99L, 1L))
@@ -224,7 +224,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void unlockUnlocksAccount() {
+    void _15_ShouldUnlockAccount_WhenUserIsLocked() {
         user.setAccountLocked(true);
         UserResponse unlocked = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -237,7 +237,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void unlockThrowsWhenMissing() {
+    void _16_ShouldThrowNotFound_WhenUnlockingMissingUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.unlock(99L))
@@ -245,7 +245,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void assignRoleAddsRoleWhenNotAlreadyAssigned() {
+    void _17_ShouldAddRole_WhenRoleNotAlreadyAssigned() {
         Role role = Role.builder().id(1L).roleName("ADMIN").build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
@@ -259,7 +259,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void assignRoleThrowsWhenAlreadyAssigned() {
+    void _18_ShouldThrowBusinessRule_WhenRoleAlreadyAssigned() {
         Role role = Role.builder().id(1L).roleName("ADMIN").build();
         user.getRoles().add(role);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -272,7 +272,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void assignRoleThrowsWhenRoleMissing() {
+    void _19_ShouldThrowNotFound_WhenAssigningMissingRole() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(roleRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -281,7 +281,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void assignRoleThrowsWhenUserMissing() {
+    void _20_ShouldThrowNotFound_WhenAssigningRoleToMissingUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.assignRole(99L, 1L))
@@ -291,7 +291,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void removeRoleRemovesWhenAssigned() {
+    void _21_ShouldRemoveRole_WhenRoleIsAssigned() {
         Role role = Role.builder().id(1L).roleName("ADMIN").build();
         user.getRoles().add(role);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -305,7 +305,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void removeRoleThrowsWhenNotAssigned() {
+    void _22_ShouldThrowBusinessRule_WhenRoleNotAssigned() {
         Role role = Role.builder().id(1L).roleName("ADMIN").build();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
@@ -317,7 +317,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void removeRoleThrowsWhenUserMissing() {
+    void _23_ShouldThrowNotFound_WhenRemovingRoleFromMissingUser() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.removeRole(99L, 1L))
@@ -327,7 +327,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void removeRoleThrowsWhenRoleMissing() {
+    void _24_ShouldThrowNotFound_WhenRemovingMissingRole() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(roleRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -336,7 +336,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void enableAccountEnablesUser() {
+    void _25_ShouldEnableUser_WhenAccountIsEnabled() {
         user.setEnabled(false);
         UserResponse enabled = new UserResponse(1L, "Ada", "Lovelace", "ada@example.com", true, false, List.of());
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -349,7 +349,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void enableAccountThrowsWhenMissing() {
+    void _26_ShouldThrowNotFound_WhenEnabledUserIsMissing() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.enableAccount(99L))
@@ -357,7 +357,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updatePasswordHashesAndSavesNewPassword() {
+    void _27_ShouldHashAndSaveNewPassword_WhenPasswordIsUpdated() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.encode("newPassword1")).thenReturn("new-hashed");
         when(userRepository.save(user)).thenReturn(user);
@@ -368,7 +368,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updatePasswordThrowsWhenMissing() {
+    void _28_ShouldThrowNotFound_WhenUpdatedPasswordUserIsMissing() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.updatePassword(99L, "newPassword1"))
