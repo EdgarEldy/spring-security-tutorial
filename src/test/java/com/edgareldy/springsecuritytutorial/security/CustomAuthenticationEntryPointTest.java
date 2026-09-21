@@ -23,7 +23,7 @@ class CustomAuthenticationEntryPointTest {
             new CustomAuthenticationEntryPoint(new ObjectMapper().findAndRegisterModules());
 
     @Test
-    void commence_writesUnauthorizedApiResponse() throws Exception {
+    void _01_ShouldWriteUnauthorizedApiResponse_WhenAuthenticationIsRequired() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
 
