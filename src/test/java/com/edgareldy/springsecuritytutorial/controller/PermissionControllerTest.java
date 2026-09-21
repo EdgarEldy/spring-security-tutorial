@@ -62,7 +62,7 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void findAllReturns200ForAdmin() throws Exception {
+    void _01_ShouldReturn200_WhenAdminListsPermissions() throws Exception {
         when(permissionService.findAll()).thenReturn(List.of(savedResponse()));
 
         mockMvc.perform(get("/api/permissions"))
@@ -72,14 +72,14 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void findAllReturns403ForNonAdmin() throws Exception {
+    void _02_ShouldReturn403_WhenNonAdminListsPermissions() throws Exception {
         mockMvc.perform(get("/api/permissions"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void createReturns201WhenValid() throws Exception {
+    void _03_ShouldReturn201_WhenCreateRequestValid() throws Exception {
         PermissionRequest request = new PermissionRequest("PRODUCT", "WRITE");
         when(permissionService.create(any())).thenReturn(savedResponse());
 
@@ -92,7 +92,7 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void createReturns400WhenBlank() throws Exception {
+    void _04_ShouldReturn400_WhenFieldsAreBlank() throws Exception {
         PermissionRequest invalid = new PermissionRequest(" ", "");
 
         mockMvc.perform(post("/api/permissions")
@@ -103,7 +103,7 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void createReturns422WhenAlreadyExists() throws Exception {
+    void _05_ShouldReturn422_WhenPermissionAlreadyExists() throws Exception {
         PermissionRequest request = new PermissionRequest("PRODUCT", "WRITE");
         when(permissionService.create(any()))
                 .thenThrow(new BusinessRuleException("Permission PRODUCT:WRITE already exists"));
@@ -116,7 +116,7 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void deleteReturns200WhenSuccessful() throws Exception {
+    void _06_ShouldReturn200_WhenDeleteSucceeds() throws Exception {
         mockMvc.perform(delete("/api/permissions/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
@@ -124,7 +124,7 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void deleteReturns403ForNonAdmin() throws Exception {
+    void _07_ShouldReturn403_WhenNonAdminDeletesPermission() throws Exception {
         mockMvc.perform(delete("/api/permissions/1"))
                 .andExpect(status().isForbidden());
 
@@ -133,7 +133,7 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void deleteReturns422WhenAssignedToRole() throws Exception {
+    void _08_ShouldReturn422_WhenPermissionAssignedToRole() throws Exception {
         doThrow(new BusinessRuleException("Permission 1 is assigned to at least one role and cannot be deleted"))
                 .when(permissionService).delete(eq(1L));
 
@@ -143,7 +143,7 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void deleteReturns404WhenMissing() throws Exception {
+    void _09_ShouldReturn404_WhenPermissionMissing() throws Exception {
         doThrow(new ResourceNotFoundException("Permission not found with id 99"))
                 .when(permissionService).delete(eq(99L));
 
