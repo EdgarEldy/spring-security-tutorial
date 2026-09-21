@@ -59,7 +59,7 @@ class PermissionServiceImplTest {
     }
 
     @Test
-    void findAllReturnsMappedList() {
+    void _01_ShouldReturnMappedList_WhenListingPermissions() {
         when(permissionRepository.findAll()).thenReturn(List.of(permission));
         when(permissionMapper.toResponse(permission)).thenReturn(permissionResponse);
 
@@ -67,7 +67,7 @@ class PermissionServiceImplTest {
     }
 
     @Test
-    void createSavesWhenResourceActionUnused() {
+    void _02_ShouldSavePermission_WhenResourceActionUnused() {
         PermissionRequest request = new PermissionRequest("PRODUCT", "WRITE");
         when(permissionRepository.existsByResourceIgnoreCaseAndActionIgnoreCase("PRODUCT", "WRITE")).thenReturn(false);
         when(permissionMapper.toEntity(request)).thenReturn(permission);
@@ -78,7 +78,7 @@ class PermissionServiceImplTest {
     }
 
     @Test
-    void createThrowsWhenResourceActionAlreadyExists() {
+    void _03_ShouldThrowBusinessRule_WhenResourceActionAlreadyExists() {
         PermissionRequest request = new PermissionRequest("PRODUCT", "WRITE");
         when(permissionRepository.existsByResourceIgnoreCaseAndActionIgnoreCase("PRODUCT", "WRITE")).thenReturn(true);
 
@@ -89,7 +89,7 @@ class PermissionServiceImplTest {
     }
 
     @Test
-    void deleteRemovesPermissionWhenUnassigned() {
+    void _04_ShouldRemovePermission_WhenPermissionIsUnassigned() {
         when(permissionRepository.findById(1L)).thenReturn(Optional.of(permission));
         when(roleRepository.existsByPermissions_Id(1L)).thenReturn(false);
 
@@ -99,7 +99,7 @@ class PermissionServiceImplTest {
     }
 
     @Test
-    void deleteThrowsWhenMissing() {
+    void _05_ShouldThrowNotFound_WhenDeletingMissingPermission() {
         when(permissionRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> permissionService.delete(99L))
@@ -107,7 +107,7 @@ class PermissionServiceImplTest {
     }
 
     @Test
-    void deleteThrowsWhenAssignedToRole() {
+    void _06_ShouldThrowBusinessRule_WhenPermissionAssignedToRole() {
         when(permissionRepository.findById(1L)).thenReturn(Optional.of(permission));
         when(roleRepository.existsByPermissions_Id(1L)).thenReturn(true);
 

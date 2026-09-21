@@ -67,7 +67,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void findAllReturnsMappedList() {
+    void _01_ShouldReturnMappedList_WhenListingRoles() {
         when(roleRepository.findAll()).thenReturn(List.of(role));
         when(roleMapper.toResponse(role)).thenReturn(roleResponse);
 
@@ -75,7 +75,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void createSavesWhenRoleNameUnused() {
+    void _02_ShouldSaveRole_WhenRoleNameUnused() {
         RoleRequest request = new RoleRequest("ADMIN");
         when(roleRepository.existsByRoleNameIgnoreCase("ADMIN")).thenReturn(false);
         when(roleMapper.toEntity(request)).thenReturn(role);
@@ -86,7 +86,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void createThrowsWhenRoleNameAlreadyExists() {
+    void _03_ShouldThrowBusinessRule_WhenRoleNameAlreadyExists() {
         RoleRequest request = new RoleRequest("ADMIN");
         when(roleRepository.existsByRoleNameIgnoreCase("ADMIN")).thenReturn(true);
 
@@ -97,7 +97,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void updateAppliesNewRoleNameWhenUnused() {
+    void _04_ShouldApplyNewName_WhenRoleNameUnused() {
         RoleRequest request = new RoleRequest("MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(roleRepository.existsByRoleNameIgnoreCase("MODERATOR")).thenReturn(false);
@@ -108,7 +108,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void updateSkipsUniquenessCheckWhenNameUnchanged() {
+    void _05_ShouldSkipUniquenessCheck_WhenNameUnchanged() {
         RoleRequest request = new RoleRequest("ADMIN");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(roleRepository.save(role)).thenReturn(role);
@@ -120,7 +120,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void updateThrowsWhenNewNameAlreadyUsedByAnotherRole() {
+    void _06_ShouldThrowBusinessRule_WhenNewNameUsedByAnotherRole() {
         RoleRequest request = new RoleRequest("MODERATOR");
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(roleRepository.existsByRoleNameIgnoreCase("MODERATOR")).thenReturn(true);
@@ -132,7 +132,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void deleteRemovesRoleWhenUnassigned() {
+    void _07_ShouldRemoveRole_WhenRoleIsUnassigned() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(userRepository.existsByRoles_Id(1L)).thenReturn(false);
 
@@ -142,7 +142,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void deleteThrowsWhenAssignedToUser() {
+    void _08_ShouldThrowBusinessRule_WhenRoleAssignedToUser() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(userRepository.existsByRoles_Id(1L)).thenReturn(true);
 
@@ -153,7 +153,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void deleteThrowsWhenMissing() {
+    void _09_ShouldThrowNotFound_WhenDeletingMissingRole() {
         when(roleRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> roleService.delete(99L))
@@ -161,7 +161,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void assignPermissionAddsPermissionWhenNotAlreadyAssigned() {
+    void _10_ShouldAddPermission_WhenPermissionNotAlreadyAssigned() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(permissionRepository.findById(1L)).thenReturn(Optional.of(permission));
         when(roleRepository.save(role)).thenReturn(role);
@@ -173,7 +173,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void assignPermissionThrowsWhenAlreadyAssigned() {
+    void _11_ShouldThrowBusinessRule_WhenPermissionAlreadyAssigned() {
         role.getPermissions().add(permission);
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(permissionRepository.findById(1L)).thenReturn(Optional.of(permission));
@@ -185,7 +185,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void assignPermissionThrowsWhenPermissionMissing() {
+    void _12_ShouldThrowNotFound_WhenAssigningMissingPermission() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(permissionRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -194,7 +194,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void assignPermissionThrowsWhenRoleMissing() {
+    void _13_ShouldThrowNotFound_WhenAssigningPermissionToMissingRole() {
         when(roleRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> roleService.assignPermission(99L, 1L))
@@ -204,7 +204,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void removePermissionRemovesWhenAssigned() {
+    void _14_ShouldRemovePermission_WhenPermissionIsAssigned() {
         role.getPermissions().add(permission);
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(permissionRepository.findById(1L)).thenReturn(Optional.of(permission));
@@ -217,7 +217,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void removePermissionThrowsWhenNotAssigned() {
+    void _15_ShouldThrowBusinessRule_WhenPermissionNotAssigned() {
         when(roleRepository.findById(1L)).thenReturn(Optional.of(role));
         when(permissionRepository.findById(1L)).thenReturn(Optional.of(permission));
 
@@ -228,7 +228,7 @@ class RoleServiceImplTest {
     }
 
     @Test
-    void removePermissionThrowsWhenRoleMissing() {
+    void _16_ShouldThrowNotFound_WhenRemovingPermissionFromMissingRole() {
         when(roleRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> roleService.removePermission(99L, 1L))

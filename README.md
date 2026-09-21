@@ -16,6 +16,8 @@ Repository: https://github.com/EdgarEldy/spring-security-tutorial
 - [Project structure](#project-structure)
 - [Standard response format](#standard-response-format)
 - [Spring AOP](#spring-aop)
+- [Testing strategy](#testing-strategy)
+  - [Test naming convention](#test-naming-convention)
 - [feature/core-architecture](#featurecore-architecture)
 - [feature/users](#featureusers)
 - [feature/roles-permissions](#featureroles-permissions)
@@ -283,6 +285,32 @@ public record ApiResponse<T>(
 - `LoggingAspect` (`aspect/LoggingAspect.java`): `@Around` advice on all `@Service` beans, logs method entry/exit, arguments (masking sensitive fields such as `password` and `token`) and exceptions
 - `ExecutionTimeAspect` (`aspect/ExecutionTimeAspect.java`): `@Around` advice on controllers, measures the processing time of each request
 - Also used to illustrate an application-security-flavored aspect: logging every failed login attempt without duplicating code in `AuthServiceImpl`
+
+## Testing strategy
+
+Every branch ships its tests before its Pull Request is opened, at the layers that apply to what the branch adds.
+
+| Layer | Tool | What it verifies |
+|---|---|---|
+| Entity | JUnit 5 only | Domain behavior of the entities (for example how `User` exposes its authorities) |
+| Repository | `@DataJpaTest` + Testcontainers (real PostgreSQL) | Derived queries, constraints and fetch graphs against a real schema |
+| Service | JUnit 5 + Mockito | Business rules and orchestration, with every repository dependency mocked |
+| Controller | `@WebMvcTest` / MockMvc | HTTP status codes, payload shape (`ApiResponse<T>`) and authorization rules (401/403) |
+| Security | JUnit 5 + Mockito | JWT handling, the authentication filter and the custom permission evaluator |
+
+### Test naming convention
+
+Every test method, at every layer, is named `_NN_Should<Outcome>_When<Condition>`: a two-digit, zero-padded sequence number (the order of the methods within the class, restarting at `_01_` in each class; JUnit does not enforce it, it is kept consistent by convention), followed by what is expected, followed by the condition that produces it.
+
+```java
+@Test
+void _01_ShouldReturnRole_WhenRoleExists() { ... }
+
+@Test
+void _02_ShouldReturn403_WhenNonAdminCreatesRole() { ... }
+```
+
+No other naming style (`shouldX()`, `testX()`, `givenX_whenY_thenZ()`, `findAllReturns200ForAdmin()`) is used anywhere in this project's test suite. This applies to test methods only, not to `@BeforeEach`/`@AfterEach` helpers.
 
 ## feature/core-architecture
 
@@ -557,6 +585,7 @@ Final integration branch: full authentication, depends on `users`, `roles-permis
 - Every controller returns an `ApiResponse<T>` (see [Standard response format](#standard-response-format))
 - The password and raw tokens are never returned in an HTTP response nor logged in plain text
 - Tokens (activation, reset, JWT) are generated with a cryptographically secure random generator (`SecureRandom` or equivalent)
+- **Test naming convention**: every test method is named `_NN_Should<Outcome>_When<Condition>`, where `NN` is a two-digit sequence number with a leading zero, restarting at `_01_` in each test class and following the order of the methods in the source (e.g. `_01_ShouldReturnRole_WhenRoleExists`, `_02_ShouldReturnEmpty_WhenRoleDoesNotExist`). This applies to every kind of test (unit, repository, controller, integration, parameterized). No other style (`shouldX()`, `testX()`, `givenX_whenY_thenZ()`) is accepted.
 
 ## Concepts covered
 
