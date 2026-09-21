@@ -17,14 +17,14 @@ import org.junit.jupiter.api.Test;
 class UserTest {
 
     @Test
-    void getAuthoritiesReturnsEmptyWhenNoRoles() {
+    void _01_ShouldReturnEmptyAuthorities_WhenUserHasNoRoles() {
         User user = User.builder().roles(new HashSet<>()).build();
 
         assertThat(user.getAuthorities()).isEmpty();
     }
 
     @Test
-    void getAuthoritiesDerivesRoleAndPermissionAuthorities() {
+    void _02_ShouldDeriveRoleAndPermissionAuthorities_WhenUserHasRoles() {
         Permission permission = Permission.builder().resource("USER").action("CREATE").build();
         Role role = Role.builder().roleName("ADMIN").permissions(Set.of(permission)).build();
         User user = User.builder().roles(Set.of(role)).build();
@@ -35,7 +35,7 @@ class UserTest {
     }
 
     @Test
-    void getAuthoritiesUpperCasesRoleNameAndPermissionRegardlessOfStoredCase() {
+    void _03_ShouldUpperCaseAuthorities_WhenStoredCaseDiffers() {
         Permission permission = Permission.builder().resource("user").action("create").build();
         Role role = Role.builder().roleName("admin").permissions(Set.of(permission)).build();
         User user = User.builder().roles(Set.of(role)).build();
