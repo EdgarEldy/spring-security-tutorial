@@ -52,7 +52,7 @@ class ActivationTokenServiceImplTest {
     }
 
     @Test
-    void generateSavesTokenAndReturnsRawValue() {
+    void _01_ShouldSaveTokenAndReturnRawValue_WhenTokenIsGenerated() {
         when(secureTokenGenerator.generate()).thenReturn("raw-token");
 
         String result = activationTokenService.generate(user);
@@ -67,7 +67,7 @@ class ActivationTokenServiceImplTest {
     }
 
     @Test
-    void validateMarksTokenValidatedAndReturnsUser() {
+    void _02_ShouldMarkTokenValidatedAndReturnUser_WhenTokenIsValid() {
         ActivationToken activationToken = ActivationToken.builder()
                 .id(1L).user(user).token("raw-token")
                 .createdAt(Instant.now()).expiresAt(Instant.now().plus(1, ChronoUnit.HOURS))
@@ -82,7 +82,7 @@ class ActivationTokenServiceImplTest {
     }
 
     @Test
-    void validateThrowsWhenTokenMissing() {
+    void _03_ShouldThrowException_WhenTokenIsMissing() {
         when(activationTokenRepository.findByToken("missing")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> activationTokenService.validate("missing"))
@@ -90,7 +90,7 @@ class ActivationTokenServiceImplTest {
     }
 
     @Test
-    void validateThrowsWhenAlreadyValidated() {
+    void _04_ShouldThrowException_WhenTokenIsAlreadyValidated() {
         ActivationToken activationToken = ActivationToken.builder()
                 .id(1L).user(user).token("raw-token")
                 .createdAt(Instant.now()).expiresAt(Instant.now().plus(1, ChronoUnit.HOURS))
@@ -105,7 +105,7 @@ class ActivationTokenServiceImplTest {
     }
 
     @Test
-    void validateThrowsWhenExpired() {
+    void _05_ShouldThrowException_WhenTokenIsExpired() {
         ActivationToken activationToken = ActivationToken.builder()
                 .id(1L).user(user).token("raw-token")
                 .createdAt(Instant.now().minus(2, ChronoUnit.DAYS))
