@@ -77,7 +77,7 @@ class UserRepositoryTest {
     }
 
     @Test
-    void findByIdKeepsRolesAndPermissionsUsableAfterDetach() {
+    void _04_ShouldKeepRolesAndPermissionsUsable_WhenUserDetached() {
         Permission permission = permissionRepository.save(Permission.builder().resource("USER").action("READ").build());
         Role role = roleRepository.save(Role.builder()
                 .roleName("ADMIN")
